@@ -57,18 +57,25 @@ vector<Coord> Game::getControlledSquares(Board& white, Board& black, Color color
 			//push squares are added if they are empty. Capture squares are added if they have the opposite color piece
 			//don't forget to also check the en passant squares. Meaning, the capture squares are legal if they are occupied or if their position is equal to one of the en passant squares
 
-			check = Coord(pos.x,pos.y-1); //Can the
+			check = Coord(pos.x,pos.y-1); //adding 1 & 2 square push
 			if (squareOccupied(*board[White],*board[Black],check)==None && onBoard(check))
+                {
                 squares.push_back(check);
+                check = Coord(pos.x,pos.y-1);
+                if (squareOccupied(*board[White],*board[Black],check)==None && onBoard(check))
+                    {
+                     squares.push_back(check);
+                    }
+                }
 
-            check = Coord(pos.x,pos.y-2)
-
-            check = Coord(pos.x-1,pos.y-1);//capture diagnal
+            check = Coord(pos.x-1,pos.y-1);//adding diagonal capture
             if (squareOccupied(*board[White],*board[Black],check) == enemy && onBoard(check))
                 squares.push_back(square);
-            check = Coord(pos.x-1,pos.y-1);
+            check = Coord(pos.x+1,pos.y-1);
             if (squareOccupied(*board[white],*board[Black],check) == enemy && onBoard(check))
                 squares.push_back(square);
+
+            check = Coord(pos.x-1,pos.y-1);//adding en passant
 
 
 
