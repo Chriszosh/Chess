@@ -14,11 +14,11 @@ Board::Board(const Board& b) {
 }
 
 Game::Game() {
-    enPassant[0] = enPassant[1] = Coord(-1,-1); //set them to an impossible square so they never match
     for (int i = 0; i<2; ++i) {
 		kingMoved[i] = false;
 		for (int j = 0; j<2; ++j) {
 			rookMoved[i][j] = false;
+			enPassant[i][j] = Coord(-1,-1); //set them to an impossible square so they never match
 		}
     }
 }
@@ -31,10 +31,10 @@ Color Game::squareOccupied(Board& white, Board& black, Coord pos) {
 	if (!onBoard(pos))
 		return None;
 
-    if (white[pos.x][pos.y]!=Empty)
+    if (white.pieces[pos.x][pos.y]!=Empty)
 		return White;
 
-	if (black[pos.x][7-pos.y]!=Empty) //black pos is y-inverted to flip the board
+	if (black.pieces[pos.x][7-pos.y]!=Empty) //black pos is y-inverted to flip the board
 		return Black;
 
 	return None;
@@ -49,7 +49,7 @@ vector<Coord> Game::getControlledSquares(Board& white, Board& black, Color color
 
     if (color!=White && color!=Black) //return empty list if we get a bad color
 		return squares;
-	piece = (*board[color])[pos.x][pos.y];
+	piece = (*board[color]).pieces[pos.x][pos.y];
 
     switch (piece) {
 		case Pawn:
@@ -59,25 +59,21 @@ vector<Coord> Game::getControlledSquares(Board& white, Board& black, Color color
 
 			check = Coord(pos.x,pos.y-1); //adding 1 & 2 square push
 			if (squareOccupied(*board[White],*board[Black],check)==None && onBoard(check))
-                {
                 squares.push_back(check);
-                check = Coord(pos.x,pos.y-1);
-                if (squareOccupied(*board[White],*board[Black],check)==None && onBoard(check))
-                    {
-                     squares.push_back(check);
-                    }
-                }
 
-            check = Coord(pos.x-1,pos.y-1);//adding diagonal capture
+            check = Coord(pos.x,pos.y-2);
+            if (squareOccupied(*board[White],*board[Black],check)==None && onBoard(check))
+                squares.push_back(check);
+
+            check = Coord(pos.x-1,pos.y-1);//capture diagonal
             if (squareOccupied(*board[White],*board[Black],check) == enemy && onBoard(check))
-                squares.push_back(square);
+                squares.push_back(check);
+
             check = Coord(pos.x+1,pos.y-1);
-            if (squareOccupied(*board[white],*board[Black],check) == enemy && onBoard(check))
-                squares.push_back(square);
+            if (squareOccupied(*board[White],*board[Black],check) == enemy && onBoard(check))
+                squares.push_back(check);
 
             check = Coord(pos.x-1,pos.y-1);//adding en passant
-
-
 
 			break;
 
@@ -126,9 +122,9 @@ bool Game::inCheck(Board& white, Board& black, Color color) {
 	return false;
 }
 
-bool Game::moveIsLegal(Color color, Coord oPos, Coord, nPos)
+bool Game::moveIsLegal(Color color, Coord oPos, Coord nPos)
 {
-    Piece piece = pieces[color][oPos.x][oPos.y];
+    Piece piece = pieces[color].pieces[oPos.x][oPos.y];
     vector<Coord> posSquares = getControlledSquares(pieces[White],pieces[Black],color,oPos);
 
     //loop through posSquares. If one matches nPos, make a temp Board. Put the piece in nPos and call inCheck. If not in check, the move is legal

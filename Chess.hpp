@@ -126,7 +126,7 @@ public:
 	 * \param nPos The position to move the piece to
 	 * \return True if the move is legal, false otherwise
 	 */
-	bool moveIsLegal(Color color, Coord oPos, Coord, nPos);
+	bool moveIsLegal(Color color, Coord oPos, Coord nPos);
 
 	/**
 	 * Makes a move on the board if it is legal
