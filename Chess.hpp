@@ -20,12 +20,17 @@ struct Coord {
 	 * \param _x The x coordinate
 	 * \param y The y coordinate
 	 */
-	Coord(int _x, int _y) { x = _x; _y = y; }
+	Coord(int _x, int _y) { x = _x; y = _y; }
 
 	/**
 	 * Checks equality
 	 */
 	bool operator== (const Coord& r) { return x==r.x && y==r.y; }
+
+	/**
+	 * Checks inequality
+	 */
+	bool operator!= (const Coord& r) { return x!=r.x || y!=r.y; }
 
 	/**
 	 * Adds component-wise
@@ -37,13 +42,13 @@ struct Coord {
  * Basic enum for representing each type of piece
  */
 enum Piece {
-	Empty,
-	Pawn,
-	Rook,
-	Knight,
-	Bishop,
-	Queen,
-	King
+	Empty = -1,
+	Pawn = 0,
+	Rook = 1,
+	Knight = 2,
+	Bishop = 3,
+	Queen = 4,
+	King = 5
 };
 
 /**
@@ -156,6 +161,14 @@ public:
 	 * \return A Board containing the pieces
 	 */
 	Board getPieces(Color color);
+
+	/**
+	 * Public version of squareOccupied for operating on the current position
+	 *
+	 * \param pos The position to check
+	 * \return The color of the piece on that square, if any
+	 */
+	Color squareOccupied(Coord pos);
 };
 
 #endif // CHESS_HPP

@@ -1,4 +1,5 @@
 #include <cmath>
+#include <iostream>
 #include "Chess.hpp"
 using namespace std;
 
@@ -111,109 +112,52 @@ vector<Coord> Game::getControlledSquares(Board& white, Board& black, Color color
 			//fall through into bishop and rook
 
 		case Bishop:
-			//up left
-			for (i = pos.x-1; i>=0; --i) {
-				for (j = pos.y-1; j>=0; --j) {
-                    tCol = squareOccupied(white,black,Coord(i,j));
-                    if (tCol==color)
-						goto doneUR;
-					squares.push_back(Coord(i,j));
-					if (tCol==enemy)
-						goto doneUL;
+			for (i = -1; i<=1; i+=2) {
+				for (int j = -1; j<=1; j+=2) {
+					dif = Coord(i,j);
+					check = pos+dif;
+                    while (onBoard(check)) {
+						tCol = squareOccupied(white,black,check);
+						if (tCol==color)
+							break;
+                        squares.push_back(check);
+                        if (tCol==enemy)
+							break;
+						check = check + dif;
+                    }
 				}
 			}
-			doneUL:
-
-			//up right
-			for (i = pos.x+1; i<8; ++i) {
-				for (j = pos.y-1; j>=0; --j) {
-                    tCol = squareOccupied(white,black,Coord(i,j));
-                    if (tCol==color)
-						goto doneUR;
-					squares.push_back(Coord(i,j));
-					if (tCol==enemy)
-						goto doneUR;
-				}
-			}
-			doneUR:
-
-			//down left
-			for (i = pos.x-1; i>=0; --i) {
-				for (j = pos.y+1; j<8; ++j) {
-                    tCol = squareOccupied(white,black,Coord(i,j));
-                    if (tCol==color)
-						goto doneUR;
-					squares.push_back(Coord(i,j));
-					if (tCol==enemy)
-						goto doneDL;
-				}
-			}
-			doneDL:
-
-			//down right
-			for (i = pos.x+1; i<8; ++i) {
-				for (j = pos.y+1; j<8; ++j) {
-                    tCol = squareOccupied(white,black,Coord(i,j));
-                    if (tCol==color)
-						goto doneUR;
-					squares.push_back(Coord(i,j));
-					if (tCol==enemy)
-						goto doneDR;
-				}
-			}
-			doneDR:
 
 			if (piece==Bishop) //not a queen
 				break;
 
 		case Rook:
-			//go left
-			for (i = pos.x-1; i>=0; --i) {
-				tCol = squareOccupied(white,black,Coord(i,pos.y));
-				if (tCol==color)
-					break;
-				squares.push_back(Coord(i,pos.y));
-				if (tCol==enemy)
-					break;
+			for (i = -1; i<=1; i+=2) {
+				dif = Coord(0,i);
+				for (j = 0; j<2; ++j) {
+					check = pos + dif;
+                    while (onBoard(check)) {
+						tCol = squareOccupied(white,black,check);
+						if (tCol==color)
+							break;
+						squares.push_back(check);
+						if (tCol==enemy)
+							break;
+						check = check + dif;
+                    }
+                    swap(dif.x,dif.y);
+				}
 			}
 
-			//go right
-			for (i = pos.x+1; i<8; ++i) {
-				tCol = squareOccupied(white,black,Coord(i,pos.y));
-				if (tCol==color)
-					break;
-				squares.push_back(Coord(i,pos.y));
-				if (tCol==enemy)
-					break;
-			}
-
-			//go up
-			for (i = pos.y-1; i>=0; --i) {
-				tCol = squareOccupied(white,black,Coord(i,pos.y));
-				if (tCol==color)
-					break;
-				squares.push_back(Coord(i,pos.y));
-				if (tCol==enemy)
-					break;
-			}
-
-			//go down
-			for (i = pos.y+1; i<8; ++i) {
-				tCol = squareOccupied(white,black,Coord(i,pos.y));
-				if (tCol==color)
-					break;
-				squares.push_back(Coord(i,pos.y));
-				if (tCol==enemy)
-					break;
-			}
 			break;
 
 		case King:
 			for (i = -1; i<=1; ++i) {
 				for (j = -1; j<=1; ++j) {
-                    if (onBoard(Coord(i,j))) {
-						if (squareOccupied(white,black,Coord(i,j))!=color)
-							squares.push_back(Coord(i,j));
+					check = pos+Coord(i,j);
+                    if (onBoard(check)) {
+						if (squareOccupied(white,black,check)!=color)
+							squares.push_back(check);
                     }
 				}
 			}
@@ -274,6 +218,8 @@ bool Game::moveIsLegal(Color color, Coord oPos, Coord nPos)
 			tB.pieces[oPos.x][(color==White)?(oPos.y):(7-oPos.y)] = Empty;
 			tE.pieces[nPos.x][(enemy==White)?(nPos.y):(7-nPos.y)] = Empty;
 			tB.pieces[nPos.x][(color==White)?(nPos.y):(7-nPos.y)] = piece;
+			if (piece==Pawn && nPos==enPassant[enemy])
+                tE.pieces[nPos.x][(color==White)?(7-nPos.y+1):(nPos.y+1)] = Empty;
 			Board* boards[2] = {&tB,&tE};
 			if (color==Black)
 				swap(boards[0],boards[1]);
@@ -377,6 +323,11 @@ bool Game::makeMove(Color color, Coord oPos, Coord nPos, Piece promotion)
 	}
 
 	//set en passant square if applicable and reset enemy en passant square
+	if (piece==Pawn && nPos==enPassant[enemy])
+	{
+		pieces[color].pieces[nPos.x][3] = Empty;
+		cout << "Took en passant\n";
+	}
 	if (piece==Pawn && abs(oPos.y-nPos.y)==2)
 		enPassant[color] = Coord(nPos.x,(color==White)?(nPos.y+1):(nPos.y-1));
 	enPassant[enemy] = Coord(-1,-1);
@@ -405,4 +356,9 @@ Board Game::getPieces(Color color)
 		for (int j = 0; j<8; ++j)
 			swap(ret.pieces[j][i],ret.pieces[j][7-i]);
 	return ret;
+}
+
+Color Game::squareOccupied(Coord pos)
+{
+	return squareOccupied(pieces[White],pieces[Black],pos);
 }
