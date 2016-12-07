@@ -194,7 +194,7 @@ bool Game::inCheck(Board& white, Board& black, Color color) {
 			if (squareOccupied(white,black,pos)==enemy) {
 				dangerSquares = getControlledSquares(white,black,enemy,pos);
 				for (unsigned int k = 0; k<dangerSquares.size(); ++k) {
-					if (dangerSquares[i]==kingPos)
+					if (dangerSquares[k]==kingPos)
 						return true;
 				}
 			}
@@ -219,7 +219,7 @@ bool Game::moveIsLegal(Color color, Coord oPos, Coord nPos)
 			tE.pieces[nPos.x][(enemy==White)?(nPos.y):(7-nPos.y)] = Empty;
 			tB.pieces[nPos.x][(color==White)?(nPos.y):(7-nPos.y)] = piece;
 			if (piece==Pawn && nPos==enPassant[enemy])
-                tE.pieces[nPos.x][(color==White)?(7-nPos.y+1):(nPos.y+1)] = Empty;
+                tE.pieces[nPos.x][4] = Empty;
 			Board* boards[2] = {&tB,&tE};
 			if (color==Black)
 				swap(boards[0],boards[1]);
@@ -311,8 +311,19 @@ bool Game::makeMove(Color color, Coord oPos, Coord nPos, Piece promotion)
 		return false;
 
 	//update kingMoved
-	if (piece==King)
+	if (piece==King) {
 		kingMoved[color] = true;
+		if (abs(oPos.x-nPos.x)==2) {
+			if (nPos.x==6) {
+				pieces[color].pieces[7][7] = Empty;
+				pieces[color].pieces[5][7] = Rook;
+			}
+			else {
+				pieces[color].pieces[3][7] = Rook;
+				pieces[color].pieces[0][7] = Empty;
+			}
+		}
+	}
 
 	//update rookMoved
 	if (piece==Rook) {
@@ -324,10 +335,7 @@ bool Game::makeMove(Color color, Coord oPos, Coord nPos, Piece promotion)
 
 	//set en passant square if applicable and reset enemy en passant square
 	if (piece==Pawn && nPos==enPassant[enemy])
-	{
-		pieces[color].pieces[nPos.x][3] = Empty;
-		cout << "Took en passant\n";
-	}
+		pieces[enemy].pieces[nPos.x][4] = Empty;
 	if (piece==Pawn && abs(oPos.y-nPos.y)==2)
 		enPassant[color] = Coord(nPos.x,(color==White)?(nPos.y+1):(nPos.y-1));
 	enPassant[enemy] = Coord(-1,-1);
