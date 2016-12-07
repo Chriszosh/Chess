@@ -1,8 +1,19 @@
 #include "Chess.hpp"
 using namespace std;
 
+///Standard: all positions passed are from white's perspective. For black's board the positions are y inverted but only for accessing those pieces, they remain in the standard form everywhere else
+
 Board::Board() {
-	//set the starting position here
+	for (int i = 0; i<8; ++i)
+		for (int j = 0; j<6; ++j)
+			pieces[i][j] = Empty;
+	for (int i = 0; i<8; ++i)
+		pieces[i][6] = Pawn;
+	pieces[0][7] = pieces [7][7] = Rook;
+	pieces[1][7] = pieces[6][7] = Knight;
+	pieces[2][7] = pieces[5][7] = Bishop;
+	pieces[3][7] = Queen;
+	pieces[4][7] = King;
 }
 
 Board::Board(const Board& b) {
@@ -16,9 +27,9 @@ Board::Board(const Board& b) {
 Game::Game() {
     for (int i = 0; i<2; ++i) {
 		kingMoved[i] = false;
+		enPassant[i] = Coord(-1,-1);
 		for (int j = 0; j<2; ++j) {
 			rookMoved[i][j] = false;
-			enPassant[i][j] = Coord(-1,-1); //set them to an impossible square so they never match
 		}
     }
 }
@@ -43,63 +54,168 @@ Color Game::squareOccupied(Board& white, Board& black, Coord pos) {
 vector<Coord> Game::getControlledSquares(Board& white, Board& black, Color color, Coord pos) {
 	Board* board[2] = {&white,&black}; //we do this to get both boards in one variable to make our code concise. (*board[COLOR])[x][y] is how to use it
 	vector<Coord> squares;
-    Piece piece;
     Color enemy = (color==White)?(Black):(White); //the color of the opponent
-    Coord check;
+    int upDir = (color==White)?(-1):(1); //add this to y to move 'up' on that board
 
     if (color!=White && color!=Black) //return empty list if we get a bad color
 		return squares;
-	piece = (*board[color]).pieces[pos.x][pos.y];
+	Piece piece = (color==White)?((*board[color]).pieces[pos.x][pos.y]):((*board[color]).pieces[pos.x][7-pos.y]); //reverse black to actually get piece
 
+	Coord check, dif;
+	Color tCol;
+	int i,j,k;
     switch (piece) {
 		case Pawn:
-			//check square in front. If pos.y==6 then also check the double push. Check the capture squares as well.
-			//push squares are added if they are empty. Capture squares are added if they have the opposite color piece
-			//don't forget to also check the en passant squares. Meaning, the capture squares are legal if they are occupied or if their position is equal to one of the en passant squares
-
-			check = Coord(pos.x,pos.y-1); //adding 1 & 2 square push
+			//push 1
+			check = Coord(pos.x,pos.y+upDir);
 			if (squareOccupied(*board[White],*board[Black],check)==None && onBoard(check))
                 squares.push_back(check);
 
-            check = Coord(pos.x,pos.y-2);
-            if (squareOccupied(*board[White],*board[Black],check)==None && onBoard(check))
+			//push 2
+            check = Coord(pos.x,pos.y+2*upDir);
+            if (squareOccupied(*board[White],*board[Black],check)==None && onBoard(check) && ((color==White && pos.y==6) || (color==Black && pos.y==1)))
                 squares.push_back(check);
 
-            check = Coord(pos.x-1,pos.y-1);//capture diagonal
-            if (squareOccupied(*board[White],*board[Black],check) == enemy && onBoard(check))
+			//capture left or en passant
+            check = Coord(pos.x-1,pos.y+upDir);
+            if (squareOccupied(*board[White],*board[Black],check)==enemy && onBoard(check))
                 squares.push_back(check);
+			else if (check==enPassant[enemy] && onBoard(check) && squareOccupied(*board[White],*board[Black],check)==None)
+				squares.push_back(check);
 
-            check = Coord(pos.x+1,pos.y-1);
-            if (squareOccupied(*board[White],*board[Black],check) == enemy && onBoard(check))
+			//capture right or en passant
+            check = Coord(pos.x+1,pos.y+upDir);
+            if (squareOccupied(*board[White],*board[Black],check)==enemy && onBoard(check))
                 squares.push_back(check);
+			else if (check==enPassant[enemy] && onBoard(check) && squareOccupied(*board[White],*board[Black],check)==None)
+				squares.push_back(check);
 
-            check = Coord(pos.x-1,pos.y-1);//adding en passant
-
-			break;
-
-		case Rook:
-			//traverse up down left and right until a square is occupied or off the board.
-			//add occupied squares if they are enemy
 			break;
 
 		case Knight:
-			//check squares matching the knight pattern (dx==2,dy==1 or dx==1,dy==2). Might be easiest to just have a whole if statement for each case (there are 8)
-			//empty squares and enemy occupied squares get added
-			break;
-
-		case Bishop:
-			//loop through the diagonal squares until we hit an occupied square or the edge of the board
-			//occupied squares get added if they are enemy
+			for (i = -1; i<=1; i+=2) {
+				for (j = -1; j<=1; j+=2) {
+					dif = Coord(1*i,2*j);
+					for (k = 0; k<2; ++k) {
+						check = pos+dif;
+						if (onBoard(check) && squareOccupied(white,black,check)!=color)
+							squares.push_back(check);
+						swap(dif.x,dif.y);
+					}
+				}
+			}
 			break;
 
 		case Queen:
-			//loop through diagonals and corridors until we hit an occupied square or the edge of the board
-			//occupied squares get added if they are enemy
+			//fall through into bishop and rook
+
+		case Bishop:
+			//up left
+			for (i = pos.x-1; i>=0; --i) {
+				for (j = pos.y-1; j>=0; --j) {
+                    tCol = squareOccupied(white,black,Coord(i,j));
+                    if (tCol==color)
+						goto doneUR;
+					squares.push_back(Coord(i,j));
+					if (tCol==enemy)
+						goto doneUL;
+				}
+			}
+			doneUL:
+
+			//up right
+			for (i = pos.x+1; i<8; ++i) {
+				for (j = pos.y-1; j>=0; --j) {
+                    tCol = squareOccupied(white,black,Coord(i,j));
+                    if (tCol==color)
+						goto doneUR;
+					squares.push_back(Coord(i,j));
+					if (tCol==enemy)
+						goto doneUR;
+				}
+			}
+			doneUR:
+
+			//down left
+			for (i = pos.x-1; i>=0; --i) {
+				for (j = pos.y+1; j<8; ++j) {
+                    tCol = squareOccupied(white,black,Coord(i,j));
+                    if (tCol==color)
+						goto doneUR;
+					squares.push_back(Coord(i,j));
+					if (tCol==enemy)
+						goto doneDL;
+				}
+			}
+			doneDL:
+
+			//down right
+			for (i = pos.x+1; i<8; ++i) {
+				for (j = pos.y+1; j<8; ++j) {
+                    tCol = squareOccupied(white,black,Coord(i,j));
+                    if (tCol==color)
+						goto doneUR;
+					squares.push_back(Coord(i,j));
+					if (tCol==enemy)
+						goto doneDR;
+				}
+			}
+			doneDR:
+
+			if (piece==Bishop) //not a queen
+				break;
+
+		case Rook:
+			//go left
+			for (i = pos.x-1; i>=0; --i) {
+				tCol = squareOccupied(white,black,Coord(i,pos.y));
+				if (tCol==color)
+					break;
+				squares.push_back(Coord(i,pos.y));
+				if (tCol==enemy)
+					break;
+			}
+
+			//go right
+			for (i = pos.x+1; i<8; ++i) {
+				tCol = squareOccupied(white,black,Coord(i,pos.y));
+				if (tCol==color)
+					break;
+				squares.push_back(Coord(i,pos.y));
+				if (tCol==enemy)
+					break;
+			}
+
+			//go up
+			for (i = pos.y-1; i>=0; --i) {
+				tCol = squareOccupied(white,black,Coord(i,pos.y));
+				if (tCol==color)
+					break;
+				squares.push_back(Coord(i,pos.y));
+				if (tCol==enemy)
+					break;
+			}
+
+			//go down
+			for (i = pos.y+1; i<8; ++i) {
+				tCol = squareOccupied(white,black,Coord(i,pos.y));
+				if (tCol==color)
+					break;
+				squares.push_back(Coord(i,pos.y));
+				if (tCol==enemy)
+					break;
+			}
 			break;
 
 		case King:
-			//same deal, you should get this by now
-			//we will handle castling in a different function
+			for (i = -1; i<=1; ++i) {
+				for (j = -1; j<=1; ++j) {
+                    if (onBoard(Coord(i,j))) {
+						if (squareOccupied(white,black,Coord(i,j))!=color)
+							squares.push_back(Coord(i,j));
+                    }
+				}
+			}
 			break;
 
 		default:
@@ -115,9 +231,30 @@ bool Game::inCheck(Board& white, Board& black, Color color) {
 	Coord kingPos;
 	vector<Coord> dangerSquares;
 
-	//loop through all squares and find the position of our king
-	//in addition, loop through all squares on the enemy board and call getControlledSquares on each piece we hit. Aggregate all returned results into dangerSquares
-	//now go through each danger square, if any one of them matches kingPos we are in check, so return true
+	//find king, convert position to white perspective if black
+	for (int i = 0; i<8; ++i) {
+		for (int j = 0; j<8; ++j) {
+			if ((*board[color]).pieces[i][j]==King) {
+				kingPos = Coord(i,(color==White)?(j):(7-j));
+				goto kingFound;
+			}
+		}
+	}
+	kingFound:
+
+	//go through enemy controlled squares and determine if any are our king
+	for (int i = 0; i<8; ++i) {
+        for (int j = 0; j<8; ++j) {
+			Coord pos(i,j);
+			if (squareOccupied(white,black,pos)==enemy) {
+				dangerSquares = getControlledSquares(white,black,enemy,pos);
+				for (unsigned int k = 0; k<dangerSquares.size(); ++k) {
+					if (dangerSquares[i]==kingPos)
+						return true;
+				}
+			}
+        }
+	}
 
 	return false;
 }

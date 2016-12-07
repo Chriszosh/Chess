@@ -21,6 +21,16 @@ struct Coord {
 	 * \param y The y coordinate
 	 */
 	Coord(int _x, int _y) { x = _x; _y = y; }
+
+	/**
+	 * Checks equality
+	 */
+	bool operator== (const Coord& r) { return x==r.x && y==r.y; }
+
+	/**
+	 * Adds component-wise
+	 */
+	Coord operator+ (const Coord& r) { return Coord(x+r.x,y+r.y); }
 };
 
 /**
@@ -69,7 +79,7 @@ struct Board {
  */
 class Game {
 	Board pieces[2]; //pieces[White] are the white pieces, pieces[Black] are the black pieces. Each side's array will have their pieces at the bottom, the reason for this is so the functions that determine moves don't have to be rewritten for each color
-	Coord enPassant[2][2]; //if a pawn is double pushed, set these 2 positions to the squares next to the pawn. They will be used the next turn to determine if en passant is legal. First index is color
+	Coord enPassant[2]; //if a pawn is double pushed the square behind it goes in here. Index is color being captured
     bool rookMoved[2][2]; //use these for castling. The first index is the color, the second index is which rook (A = 0, H = 1)
     bool kingMoved[2]; //also use this for castling. Index is color
 
