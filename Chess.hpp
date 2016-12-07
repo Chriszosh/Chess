@@ -148,6 +148,14 @@ public:
 	 * \return True if the piece was moved, false otherwise
 	 */
 	bool makeMove(Color color, Coord oPos, Coord nPos, Piece promotion = Empty);
+
+	/**
+	 * Returns a Board containing the requested pieces with white at the bottom
+	 *
+	 * \param color The color of the pieces to get
+	 * \return A Board containing the pieces
+	 */
+	Board getPieces(Color color);
 };
 
 #endif // CHESS_HPP

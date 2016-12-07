@@ -394,3 +394,15 @@ bool Game::makeMove(Color color, Coord oPos, Coord nPos, Piece promotion)
 
 	return true;
 }
+
+Board Game::getPieces(Color color)
+{
+	if (color==White)
+		return pieces[White];
+
+	Board ret = pieces[Black];
+	for (int i = 0; i<4; ++i)
+		for (int j = 0; j<8; ++j)
+			swap(ret.pieces[j][i],ret.pieces[j][7-i]);
+	return ret;
+}
