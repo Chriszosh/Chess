@@ -1,3 +1,4 @@
+#include <cmath>
 #include "Chess.hpp"
 using namespace std;
 
@@ -261,27 +262,135 @@ bool Game::inCheck(Board& white, Board& black, Color color) {
 
 bool Game::moveIsLegal(Color color, Coord oPos, Coord nPos)
 {
-    Piece piece = pieces[color].pieces[oPos.x][oPos.y];
+	Color enemy = (color==White)?(Black):(White);
+    Piece piece = pieces[color].pieces[oPos.x][(color==White)?(oPos.y):(7-oPos.y)];
     vector<Coord> posSquares = getControlledSquares(pieces[White],pieces[Black],color,oPos);
 
-    //loop through posSquares. If one matches nPos, make a temp Board. Put the piece in nPos and call inCheck. If not in check, the move is legal
-    //note, the beautiful thing about this design is that en passant and the double pawn push are included in getControlledSquares so there's no need to explicitly check for them here
+    //see if a piece is moving to a valid square and that the new position isn't check
+    for (unsigned int i = 0; i<posSquares.size(); ++i) {
+		if (posSquares[i]==nPos) {
+			Board tB = pieces[color];
+			Board tE = pieces[enemy];
+			tB.pieces[oPos.x][(color==White)?(oPos.y):(7-oPos.y)] = Empty;
+			tE.pieces[nPos.x][(enemy==White)?(nPos.y):(7-nPos.y)] = Empty;
+			tB.pieces[nPos.x][(color==White)?(nPos.y):(7-nPos.y)] = piece;
+			Board* boards[2] = {&tB,&tE};
+			if (color==Black)
+				swap(boards[0],boards[1]);
+			return !inCheck(*boards[White],*boards[Black],color);
+		}
+    }
 
-    //if we got no matches from the above check for castling
-    //to do this verify that all squares between the rook and king are empty
-    //we also need to verify that the king has not moved, nor the rook we want. Luckily, we have variables that tell us that
-    //we also need to verify that we are not in check, this is as easy as calling inCheck on the current position
-    //one last thing: verify that we do not pass through check. This can either be done by making a temp board and putting the king on each square (one at a time) and calling inCheck for each one, or by getting a list of all squares controlled by enemy pieces and seeing if any of them are the ones we pass through
-    //if all of the above pass, the castle is legal
+    //castling
+    if (((color==White && oPos==Coord(4,7)) || (color==Black && oPos==Coord(4,0))) && piece==King) {
+    	//verify actually castling and not just moving
+    	if ((nPos.x!=2 && nPos.x!=6) || nPos.y!=oPos.y)
+			return false;
+
+		//check not in check
+		if (inCheck(pieces[White],pieces[Black],color))
+			return false;
+
+		//check king moved
+		if (kingMoved[color])
+			return false;
+
+		//queenside
+        if (nPos.x==2) {
+			//check rook moved
+			if (rookMoved[color][0])
+				return false;
+
+			//check all squares free between king/rook
+			for (int i = 1; i<4; ++i) {
+				if (squareOccupied(pieces[White],pieces[Black],Coord(i,oPos.y))!=None)
+					return false;
+			}
+
+			//check not moving through check
+			for (int i = 3; i>=2; --i) {
+				Board tB = pieces[color];
+				Board* boards[2] = {&tB,&pieces[enemy]};
+				if (color==Black)
+					swap(boards[0],boards[1]);
+				tB.pieces[oPos.x][(color==White)?(oPos.y):(7-oPos.y)] = Empty;
+				tB.pieces[i][(color==White)?(oPos.y):(7-oPos.y)] = King;
+				if (inCheck(*boards[White],*boards[Black],color))
+					return false;
+			}
+
+			//we made it
+			return true;
+        }
+
+        //kingside
+        else if (nPos.x==6) {
+			//check rook moved
+			if (rookMoved[color][1])
+				return false;
+
+			//check all squares free between king/rook
+			for (int i = 5; i<6; ++i) {
+				if (squareOccupied(pieces[White],pieces[Black],Coord(i,oPos.y))!=None)
+					return false;
+			}
+
+			//check not moving through check
+			for (int i = 5; i<=7; ++i) {
+				Board tB = pieces[color];
+				Board* boards[2] = {&tB,&pieces[enemy]};
+				if (color==Black)
+					swap(boards[0],boards[1]);
+				tB.pieces[oPos.x][(color==White)?(oPos.y):(7-oPos.y)] = Empty;
+				tB.pieces[i][(color==White)?(oPos.y):(7-oPos.y)] = King;
+				if (inCheck(*boards[White],*boards[Black],color))
+					return false;
+			}
+
+			//we made it
+			return true;
+        }
+    }
 
     return false;
 }
 
 bool Game::makeMove(Color color, Coord oPos, Coord nPos, Piece promotion)
 {
-	//verify that the move is legal. Return false if not
-	//if it is, set the new square equal to the piece and the old square to Empty
-	//if the move is pawn reaching the back rank we will set the new square to promotion instead of Pawn
+	Color enemy = (color==White)?(Black):(White);
+	Piece piece = pieces[color].pieces[oPos.x][(color==White)?(oPos.y):(7-oPos.y)];
+
+	//make sure it's legal
+	if (!moveIsLegal(color,oPos,nPos))
+		return false;
+
+	//update kingMoved
+	if (piece==King)
+		kingMoved[color] = true;
+
+	//update rookMoved
+	if (piece==Rook) {
+		if ((oPos==Coord(0,0) && color==Black) || (oPos==Coord(0,7) && color==White))
+			rookMoved[color][0] = true;
+		if ((oPos==Coord(7,0) && color==Black) || (oPos==Coord(7,7) && color==White))
+			rookMoved[color][1] = true;
+	}
+
+	//set en passant square if applicable and reset enemy en passant square
+	if (piece==Pawn && abs(oPos.y-nPos.y)==2)
+		enPassant[color] = Coord(nPos.x,(color==White)?(nPos.y+1):(nPos.y-1));
+	enPassant[enemy] = Coord(-1,-1);
+
+	//update boards
+	pieces[color].pieces[oPos.x][(color==White)?(oPos.y):(7-oPos.y)] = Empty;
+	pieces[color].pieces[nPos.x][(color==White)?(nPos.y):(7-nPos.y)] = piece;
+	pieces[enemy].pieces[nPos.x][(enemy==White)?(nPos.y):(7-nPos.y)] = Empty;
+
+	//if promotion, promote
+	if (piece==Pawn) {
+		if ((color==White && nPos.y==0) || (color==Black && nPos.y==7))
+			pieces[color].pieces[nPos.x][(color==White)?(nPos.y):(7-nPos.y)] = promotion;
+	}
 
 	return true;
 }
