@@ -49,6 +49,7 @@ int main()
 	Coord selPos(-1,-1);
 	bool whiteMove = true;
 	bool done = false;
+	bool skipAI = false;
 	int natDelay = 0;
 
 	while (window.isOpen()) {
@@ -71,10 +72,11 @@ int main()
 					}
 					else {
 						::Color moveCol = whiteMove?(White):(Black);
-						if (!chess.makeMove(moveCol,selPos,square))
+						if (!chess.makeMove(moveCol,selPos,square,Queen))
 							badMove.play();
 						else {
 							whiteMove = !whiteMove;
+							skipAI = true;
 							if (chess.inStalemate(White) || chess.inStalemate(Black)) {
 								done = true;
 								window.setTitle("Chess | DRAW");
@@ -101,10 +103,10 @@ int main()
 				}
 			}
 		}
-		if (!whiteMove && natDelay>33 && !done) {
+		if (!whiteMove && !done && !skipAI) {
 			natDelay = 0;
 			whiteMove = true;
-			pair<Coord,Coord> mv = ai.getRandomMove();
+			pair<Coord,Coord> mv = ai.getMove();
 			chess.makeMove(Black,mv.first,mv.second,Queen);
 		}
 
@@ -141,6 +143,7 @@ int main()
 		window.display();
 
 		sleep(milliseconds(30));
+		skipAI = false;
 		if (!whiteMove)
 			natDelay++;
 	}

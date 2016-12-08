@@ -9,10 +9,29 @@
  */
 class AI
 {
-    static const int depth = 3;
+    static const int depth = 2;
+	const int weights[7] = {0,1,5,3,3,9,50};
 
     Game& board;
-    Color me;
+    Color me, enemy;
+
+    /**
+     * Generates a score for the passed move based on material and material in sub-moves
+     *
+     * \param b The game board to use
+     * \param oPos The position of the piece to move
+     * \param nPos The position to move to
+     * \param dt The current depth left. Will not recurse if less than 0
+     * \return A score for the move
+     */
+    int scoreMove(Game& b, Coord oPos, Coord nPos, int dt);
+
+    /**
+     * Sums all of the material on a board
+     * \param b The board to count on
+     * \return A count of all the material on the board
+     */
+	int sumBoard(Board b);
 
 public:
 	/**

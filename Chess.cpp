@@ -371,6 +371,11 @@ Color Game::squareOccupied(Coord pos)
 	return squareOccupied(pieces[White],pieces[Black],pos);
 }
 
+Piece Game::getPiece(Coord pos, Color color)
+{
+	return pieces[color].pieces[pos.x][(color==White)?(pos.y):(7-pos.y)];
+}
+
 vector<Coord> Game::getLegalMoves(Coord pos)
 {
 	Color color = squareOccupied(pos);

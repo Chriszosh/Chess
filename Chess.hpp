@@ -171,6 +171,15 @@ public:
 	Color squareOccupied(Coord pos);
 
 	/**
+	 * Returns the piece of the given color on the given square, if any
+	 *
+	 * \param pos The position (from white's perspective) to check
+	 * \param color The color of the piece to check
+	 * \return The Piece on the square of the color to check
+	 */
+	Piece getPiece(Coord pos, Color color);
+
+	/**
 	 * Returns a vector of squares that the piece at the given position can move to
 	 *
 	 * \param pos The square that the piece is on (white on bottom)
