@@ -4,6 +4,7 @@
 #include <SFML/Audio.hpp>
 #include <SFML/System.hpp>
 #include "Chess.hpp"
+#include "AI.hpp"
 using namespace std;
 using namespace sf;
 
@@ -43,10 +44,12 @@ int main()
 	}
 
 	Game chess;
+	AI ai(chess,Black);
     vector<Coord> moves;
 	Coord selPos(-1,-1);
 	bool whiteMove = true;
 	bool done = false;
+	int natDelay = 0;
 
 	while (window.isOpen()) {
 		Event evt;
@@ -55,7 +58,7 @@ int main()
 				window.close();
 		}
 
-		if (Mouse::isButtonPressed(Mouse::Left) && !done) {
+		if (Mouse::isButtonPressed(Mouse::Left) && !done && whiteMove) {
 			Vector2i pos = Mouse::getPosition(window);
 			if (pos.x>=0 && pos.y>=0 && pos.x<size && pos.y<size) {
 				Coord square(pos.x*8/size,pos.y*8/size);
@@ -98,6 +101,12 @@ int main()
 				}
 			}
 		}
+		if (!whiteMove && natDelay>33 && !done) {
+			natDelay = 0;
+			whiteMove = true;
+			pair<Coord,Coord> mv = ai.getRandomMove();
+			chess.makeMove(Black,mv.first,mv.second,Queen);
+		}
 
 		bool drawBlack = false;
 		Board temp[2] = {chess.getPieces(White),chess.getPieces(Black)};
@@ -132,6 +141,8 @@ int main()
 		window.display();
 
 		sleep(milliseconds(30));
+		if (!whiteMove)
+			natDelay++;
 	}
 
 	return 0;

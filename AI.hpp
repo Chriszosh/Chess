@@ -11,7 +11,7 @@ class AI
 {
     static const int depth = 3;
 
-    Chess& board;
+    Game& board;
     Color me;
 
 public:
@@ -21,7 +21,7 @@ public:
      * \param b A reference to the board of play
      * \param m The color to play as
      */
-	AI(Chess& b, Color m);
+	AI(Game& b, Color m);
 
 	/**
 	 * Evaluates the position based on material and determines a move
