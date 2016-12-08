@@ -70,13 +70,13 @@ vector<Coord> Game::getControlledSquares(Board& white, Board& black, Color color
 		case Pawn:
 			//push 1
 			check = Coord(pos.x,pos.y+upDir);
-			if (squareOccupied(*board[White],*board[Black],check)==None && onBoard(check))
+			if (squareOccupied(*board[White],*board[Black],check)==None && onBoard(check)) {
                 squares.push_back(check);
-
-			//push 2
-            check = Coord(pos.x,pos.y+2*upDir);
-            if (squareOccupied(*board[White],*board[Black],check)==None && onBoard(check) && ((color==White && pos.y==6) || (color==Black && pos.y==1)))
-                squares.push_back(check);
+                //push 2
+				check = Coord(pos.x,pos.y+2*upDir);
+				if (squareOccupied(*board[White],*board[Black],check)==None && onBoard(check) && ((color==White && pos.y==6) || (color==Black && pos.y==1)))
+					squares.push_back(check);
+			}
 
 			//capture left or en passant
             check = Coord(pos.x-1,pos.y+upDir);
