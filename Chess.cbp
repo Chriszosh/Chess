@@ -52,6 +52,8 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="AI.cpp" />
+		<Unit filename="AI.hpp" />
 		<Unit filename="Chess.cpp" />
 		<Unit filename="Chess.hpp" />
 		<Unit filename="main.cpp" />
