@@ -169,6 +169,30 @@ public:
 	 * \return The color of the piece on that square, if any
 	 */
 	Color squareOccupied(Coord pos);
+
+	/**
+	 * Returns a vector of squares that the piece at the given position can move to
+	 *
+	 * \param pos The square that the piece is on (white on bottom)
+	 * \return A vector containing all of the squares that the piece can move to
+	 */
+	std::vector<Coord> getLegalMoves(Coord pos);
+
+	/**
+	 * Checks if the given color is in checkmate
+	 *
+	 * \param color The color to test for checkmate
+	 * \return True if the color is in checkmate, false otherwise
+	 */
+	bool inCheckmate(Color color);
+
+	/**
+	 * Checks if the given color is in stalemate
+	 *
+	 * \param color The color to test for stalemate
+	 * \return True if the color is in stalemate, false otherwise
+	 */
+	bool inStalemate(Color color);
 };
 
 #endif // CHESS_HPP

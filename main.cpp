@@ -13,6 +13,7 @@ int main()
 	RenderWindow window(VideoMode(size,size,32), "Chess | White to move", Style::Titlebar|Style::Close);
 	Music badMove;
 	RectangleShape whiteSquare(Vector2f(size/8,size/8)), blackSquare(Vector2f(size/8,size/8)), highlight(Vector2f(size/8,size/8));
+	CircleShape dot(size/(8*4));
 	Texture pieceTxtrs[2][6];
 	Sprite pieceImages[2][6];
 
@@ -20,6 +21,7 @@ int main()
 	whiteSquare.setFillColor(sf::Color::White);
 	blackSquare.setFillColor(sf::Color(80,80,80));
 	highlight.setFillColor(sf::Color(0,255,0,64));
+	dot.setFillColor(sf::Color(40,40,40,120));
 	pieceTxtrs[White][Pawn].loadFromFile("res/whitePawn.png");
 	pieceTxtrs[White][Rook].loadFromFile("res/whiteRook.png");
 	pieceTxtrs[White][Knight].loadFromFile("res/whiteKnight.png");
@@ -41,8 +43,10 @@ int main()
 	}
 
 	Game chess;
+    vector<Coord> moves;
 	Coord selPos(-1,-1);
 	bool whiteMove = true;
+	bool done = false;
 
 	while (window.isOpen()) {
 		Event evt;
@@ -51,7 +55,7 @@ int main()
 				window.close();
 		}
 
-		if (Mouse::isButtonPressed(Mouse::Left)) {
+		if (Mouse::isButtonPressed(Mouse::Left) && !done) {
 			Vector2i pos = Mouse::getPosition(window);
 			if (pos.x>=0 && pos.y>=0 && pos.x<size && pos.y<size) {
 				Coord square(pos.x*8/size,pos.y*8/size);
@@ -59,18 +63,36 @@ int main()
 				if ((whiteMove && col==White) || (!whiteMove && col==Black) || selPos!=Coord(-1,-1)) {
 					if (selPos==Coord(-1,-1)) {
 						selPos = square;
+						moves = chess.getLegalMoves(selPos);
                         sleep(milliseconds(250));
 					}
 					else {
 						::Color moveCol = whiteMove?(White):(Black);
 						if (!chess.makeMove(moveCol,selPos,square))
 							badMove.play();
+						else {
+							whiteMove = !whiteMove;
+							if (chess.inStalemate(White) || chess.inStalemate(Black)) {
+								done = true;
+								window.setTitle("Chess | DRAW");
+							}
+							else if (chess.inCheckmate(White)) {
+								done = true;
+								window.setTitle("Chess | Black WINS!");
+							}
+							else if (chess.inCheckmate(Black)) {
+								done = true;
+								window.setTitle("Chess | White WINS!");
+							}
+							else {
+								if (whiteMove)
+									window.setTitle("Chess | White to move");
+								else
+									window.setTitle("Chess | Black to move");
+							}
+						}
 						selPos = Coord(-1,-1);
-                        whiteMove = !whiteMove;
-                        if (whiteMove)
-							window.setTitle("Chess | White to move");
-						else
-							window.setTitle("Chess | Black to move");
+						moves.clear();
                         sleep(milliseconds(250));
 					}
 				}
@@ -98,6 +120,12 @@ int main()
 						window.draw(pieceImages[i][temp[i].pieces[x][y]]);
                     }
 				}
+                for (unsigned int i = 0; i<moves.size(); ++i) {
+					if (moves[i].x==x && moves[i].y==y) {
+						dot.setPosition(x*size/8+size/32,y*size/8+size/32);
+						window.draw(dot);
+					}
+                }
 			}
 			drawBlack = !drawBlack;
 		}

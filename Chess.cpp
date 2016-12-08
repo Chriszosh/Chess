@@ -370,3 +370,63 @@ Color Game::squareOccupied(Coord pos)
 {
 	return squareOccupied(pieces[White],pieces[Black],pos);
 }
+
+vector<Coord> Game::getLegalMoves(Coord pos)
+{
+	Color color = squareOccupied(pos);
+	Piece piece = pieces[color].pieces[pos.x][(color==White)?(pos.y):(7-pos.y)];
+	vector<Coord> squares = getControlledSquares(pieces[White],pieces[Black],color,pos);
+
+	for (unsigned int i = 0; i<squares.size(); ++i) {
+		if (!moveIsLegal(color,pos,squares[i])) {
+			squares.erase(squares.begin()+i);
+			--i;
+		}
+	}
+    if (piece==King) {
+		if (moveIsLegal(color,pos,Coord(pos.x-2,pos.y)))
+			squares.push_back(Coord(pos.x-2,pos.y));
+		if (moveIsLegal(color,pos,Coord(pos.x+2,pos.y)))
+			squares.push_back(Coord(pos.x+2,pos.y));
+    }
+
+    return squares;
+}
+
+bool Game::inCheckmate(Color color)
+{
+	if (!inCheck(pieces[White],pieces[Black],color))
+		return false;
+
+    //check for any legal moves
+    for (int x = 0; x<8; ++x) {
+		for (int y = 0; y<8; ++y) {
+			Coord t(x,y);
+			if (squareOccupied(t)==color) {
+				if (getLegalMoves(t).size()>0)
+					return false;
+			}
+		}
+    }
+
+    return true;
+}
+
+bool Game::inStalemate(Color color)
+{
+	if (inCheck(pieces[White],pieces[Black],color))
+		return false;
+
+    //check for any legal moves
+    for (int x = 0; x<8; ++x) {
+		for (int y = 0; y<8; ++y) {
+			Coord t(x,y);
+			if (squareOccupied(t)==color) {
+				if (getLegalMoves(t).size()>0)
+					return false;
+			}
+		}
+    }
+
+    return true;
+}

@@ -2,5 +2,6 @@
 *.depend
 *.dll
 *.exe
+*.save-failed
 bin/
 obj/
