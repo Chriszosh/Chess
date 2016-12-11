@@ -43,7 +43,7 @@ int main()
 		}
 	}
 
-	Game chess;
+	Chess chess;
 	AI ai(chess,Black);
     vector<Coord> moves;
 	Coord selPos(-1,-1);

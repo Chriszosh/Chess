@@ -26,7 +26,7 @@ Board::Board(const Board& b) {
 	}
 }
 
-Game::Game() {
+Chess::Chess() {
     for (int i = 0; i<2; ++i) {
 		kingMoved[i] = false;
 		enPassant[i] = Coord(-1,-1);
@@ -36,11 +36,11 @@ Game::Game() {
     }
 }
 
-bool Game::onBoard(Coord pos) {
+bool Chess::onBoard(Coord pos) {
 	return (pos.x>=0 && pos.x<=7 && pos.y>=0 && pos.y<=7);
 }
 
-Color Game::squareOccupied(Board& white, Board& black, Coord pos) {
+Color Chess::squareOccupied(Board& white, Board& black, Coord pos) {
 	if (!onBoard(pos))
 		return None;
 
@@ -53,7 +53,7 @@ Color Game::squareOccupied(Board& white, Board& black, Coord pos) {
 	return None;
 }
 
-vector<Coord> Game::getControlledSquares(Board& white, Board& black, Color color, Coord pos) {
+vector<Coord> Chess::getControlledSquares(Board& white, Board& black, Color color, Coord pos) {
 	Board* board[2] = {&white,&black}; //we do this to get both boards in one variable to make our code concise. (*board[COLOR])[x][y] is how to use it
 	vector<Coord> squares;
     Color enemy = (color==White)?(Black):(White); //the color of the opponent
@@ -170,7 +170,7 @@ vector<Coord> Game::getControlledSquares(Board& white, Board& black, Color color
     return squares;
 }
 
-bool Game::inCheck(Board& white, Board& black, Color color) {
+bool Chess::inCheck(Board& white, Board& black, Color color) {
 	Board* board[2] = {&white,&black};
 	Color enemy = (color==White)?(Black):(White);
 	Coord kingPos;
@@ -204,7 +204,7 @@ bool Game::inCheck(Board& white, Board& black, Color color) {
 	return false;
 }
 
-bool Game::moveIsLegal(Color color, Coord oPos, Coord nPos)
+bool Chess::moveIsLegal(Color color, Coord oPos, Coord nPos)
 {
 	Color enemy = (color==White)?(Black):(White);
     Piece piece = pieces[color].pieces[oPos.x][(color==White)?(oPos.y):(7-oPos.y)];
@@ -301,7 +301,7 @@ bool Game::moveIsLegal(Color color, Coord oPos, Coord nPos)
     return false;
 }
 
-bool Game::makeMove(Color color, Coord oPos, Coord nPos, Piece promotion)
+bool Chess::makeMove(Color color, Coord oPos, Coord nPos, Piece promotion)
 {
 	Color enemy = (color==White)?(Black):(White);
 	Piece piece = pieces[color].pieces[oPos.x][(color==White)?(oPos.y):(7-oPos.y)];
@@ -354,7 +354,7 @@ bool Game::makeMove(Color color, Coord oPos, Coord nPos, Piece promotion)
 	return true;
 }
 
-Board Game::getPieces(Color color)
+Board Chess::getPieces(Color color)
 {
 	if (color==White)
 		return pieces[White];
@@ -366,17 +366,17 @@ Board Game::getPieces(Color color)
 	return ret;
 }
 
-Color Game::squareOccupied(Coord pos)
+Color Chess::squareOccupied(Coord pos)
 {
 	return squareOccupied(pieces[White],pieces[Black],pos);
 }
 
-Piece Game::getPiece(Coord pos, Color color)
+Piece Chess::getPiece(Coord pos, Color color)
 {
 	return pieces[color].pieces[pos.x][(color==White)?(pos.y):(7-pos.y)];
 }
 
-vector<Coord> Game::getLegalMoves(Coord pos)
+vector<Coord> Chess::getLegalMoves(Coord pos)
 {
 	Color color = squareOccupied(pos);
 	Piece piece = pieces[color].pieces[pos.x][(color==White)?(pos.y):(7-pos.y)];
@@ -398,7 +398,7 @@ vector<Coord> Game::getLegalMoves(Coord pos)
     return squares;
 }
 
-bool Game::inCheckmate(Color color)
+bool Chess::inCheckmate(Color color)
 {
 	if (!inCheck(pieces[White],pieces[Black],color))
 		return false;
@@ -417,7 +417,7 @@ bool Game::inCheckmate(Color color)
     return true;
 }
 
-bool Game::inStalemate(Color color)
+bool Chess::inStalemate(Color color)
 {
 	if (inCheck(pieces[White],pieces[Black],color))
 		return false;

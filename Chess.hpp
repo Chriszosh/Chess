@@ -61,7 +61,7 @@ enum Color {
 };
 
 /**
- * Container class for storing pieces. This is kept separate from Game so temporary positions can be created to help determine if moves are legal
+ * Container class for storing pieces. This is kept separate from Chess so temporary positions can be created to help determine if moves are legal
  */
 struct Board {
 	Piece pieces[8][8];
@@ -82,7 +82,7 @@ struct Board {
 /**
  * Board class for storing the position and determining legal moves
  */
-class Game {
+class Chess {
 	Board pieces[2]; //pieces[White] are the white pieces, pieces[Black] are the black pieces. Each side's array will have their pieces at the bottom, the reason for this is so the functions that determine moves don't have to be rewritten for each color
 	Coord enPassant[2]; //if a pawn is double pushed the square behind it goes in here. Index is color being captured
     bool rookMoved[2][2]; //use these for castling. The first index is the color, the second index is which rook (A = 0, H = 1)
@@ -131,7 +131,7 @@ public:
 	/**
 	 * Default constructor. Initializes the en passant squares and the castling variables
 	 */
-	Game();
+	Chess();
 
 	/**
 	 * Determines if a move is legal or not. Handles all special cases like castling, en passant, double/single pawn push, check, etc

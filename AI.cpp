@@ -3,7 +3,7 @@
 #include "AI.hpp"
 using namespace std;
 
-AI::AI(Game& b, Color m) : board(b)
+AI::AI(Chess& b, Color m) : board(b)
 {
 	me = m;
 	enemy = (me==White)?(Black):(White);
@@ -20,7 +20,7 @@ int AI::sumBoard(Board b)
 	return s;
 }
 
-int AI::scoreMove(Game& b, Coord oPos, Coord nPos, int dt)
+int AI::scoreMove(Chess& b, Coord oPos, Coord nPos, int dt)
 {
 	Color moved = b.squareOccupied(oPos);
 	Color toMove = (moved==White)?(Black):(White);
@@ -40,7 +40,7 @@ int AI::scoreMove(Game& b, Coord oPos, Coord nPos, int dt)
 				if (b.squareOccupied(c)==toMove) {
 					vector<Coord> moves = b.getLegalMoves(c);
 					for (unsigned int i = 0; i<moves.size(); ++i) {
-                        Game t = b;
+                        Chess t = b;
                         int ts = scoreMove(t,c,moves[i],dt-1);
                         score += ts-off;
 					}
@@ -62,7 +62,7 @@ pair<Coord,Coord> AI::getMove()
 		for (int y = 0; y<8; ++y) {
 			Coord c(x,y);
 			if (board.squareOccupied(c)==me) {
-				Game t = board;
+				Chess t = board;
 				vector<Coord> moves = board.getLegalMoves(c);
                 for (unsigned int i = 0; i<moves.size(); ++i) {
 					int s = scoreMove(t,c,moves[i],0);
