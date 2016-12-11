@@ -9,17 +9,6 @@ AI::AI(Chess& b, Color m) : board(b)
 	enemy = (me==White)?(Black):(White);
 }
 
-int AI::sumBoard(Board b)
-{
-	int s = 0;
-	for (int x = 0; x<8; ++x) {
-		for (int y = 0; y<8; ++y) {
-			s += weights[b.pieces[x][y]+1];
-		}
-	}
-	return s;
-}
-
 int AI::scoreMove(Chess& b, Coord oPos, Coord nPos, int dt)
 {
 	Color moved = b.squareOccupied(oPos);
@@ -28,7 +17,7 @@ int AI::scoreMove(Chess& b, Coord oPos, Coord nPos, int dt)
 	int off = 0;
 
 	b.makeMove(moved,oPos,nPos,Queen);
-	score = (sumBoard(b.getPieces(me))-sumBoard(b.getPieces(enemy)));
+	score = b.getScore();
 	off = score;
 
 	//do more moves if not at depth
@@ -56,7 +45,7 @@ pair<Coord,Coord> AI::getMove()
 {
 	pair<Coord,Coord> topMove;
 	int topScore = -110;
-	cout << "current score: " << (sumBoard(board.getPieces(me))-sumBoard(board.getPieces(enemy))) << endl;
+	cout << "current score: " << board.getScore() << endl;
 
 	for (int x = 0; x<8; ++x) {
 		for (int y = 0; y<8; ++y) {

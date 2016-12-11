@@ -9,10 +9,7 @@
  */
 class AI
 {
-    static const int depth = 2;
-	const int weights[7] = {0,1,5,3,3,9,50};
-
-    Chess& board;
+	Chess& board;
     Color me, enemy;
 
     /**
@@ -25,13 +22,6 @@ class AI
      * \return A score for the move
      */
     int scoreMove(Chess& b, Coord oPos, Coord nPos, int dt);
-
-    /**
-     * Sums all of the material on a board
-     * \param b The board to count on
-     * \return A count of all the material on the board
-     */
-	int sumBoard(Board b);
 
 public:
 	/**

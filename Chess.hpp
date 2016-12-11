@@ -80,9 +80,10 @@ struct Board {
 };
 
 /**
- * Board class for storing the position and determining legal moves
+ * Game class for storing the position and determining legal moves
  */
 class Chess {
+	static const int weights[7];
 	Board pieces[2]; //pieces[White] are the white pieces, pieces[Black] are the black pieces. Each side's array will have their pieces at the bottom, the reason for this is so the functions that determine moves don't have to be rewritten for each color
 	Coord enPassant[2]; //if a pawn is double pushed the square behind it goes in here. Index is color being captured
     bool rookMoved[2][2]; //use these for castling. The first index is the color, the second index is which rook (A = 0, H = 1)
@@ -188,6 +189,14 @@ public:
 	std::vector<Coord> getLegalMoves(Coord pos);
 
 	/**
+	 * Returns a vector containing all the moves that the given color can make
+	 *
+	 * \param col The color to move
+	 * \return A vector of pairs containing the starting and ending squares of each move
+	 */
+	std::vector<std::pair<Coord,Coord> > getAllMoves(Color col);
+
+	/**
 	 * Checks if the given color is in checkmate
 	 *
 	 * \param color The color to test for checkmate
@@ -202,6 +211,11 @@ public:
 	 * \return True if the color is in stalemate, false otherwise
 	 */
 	bool inStalemate(Color color);
+
+	/**
+	 * Returns the material imbalance
+	 */
+	int getScore();
 };
 
 #endif // CHESS_HPP

@@ -5,6 +5,8 @@ using namespace std;
 
 ///Standard: all positions passed are from white's perspective. For black's board the positions are y inverted but only for accessing those pieces, they remain in the standard form everywhere else
 
+const int Chess::weights[7] = {0,1,5,3,3,9,50};
+
 Board::Board() {
 	for (int i = 0; i<8; ++i)
 		for (int j = 0; j<6; ++j)
@@ -398,6 +400,25 @@ vector<Coord> Chess::getLegalMoves(Coord pos)
     return squares;
 }
 
+vector<pair<Coord,Coord> > Chess::getAllMoves(Color col)
+{
+	vector<pair<Coord,Coord> > ret;
+	vector<Coord> t;
+
+	for (int x = 0; x<8; ++x) {
+		for (int y = 0; y<8; ++y) {
+			Coord c(x,y);
+            if (squareOccupied(pieces[White],pieces[Black],c)==col) {
+				t = getLegalMoves(c);
+				for (unsigned int i = 0; i<t.size(); ++i)
+					ret.push_back(make_pair(c,t[i]));
+            }
+		}
+	}
+
+	return ret;
+}
+
 bool Chess::inCheckmate(Color color)
 {
 	if (!inCheck(pieces[White],pieces[Black],color))
@@ -434,4 +455,13 @@ bool Chess::inStalemate(Color color)
     }
 
     return true;
+}
+
+int Chess::getScore()
+{
+	int r = 0;
+	for (int x = 0; x<8; ++x)
+		for (int y = 0; y<8; ++y)
+			r += weights[pieces[White].pieces[x][y]] - weights[pieces[Black].pieces[x][7-y]];
+	return r;
 }
