@@ -5,6 +5,7 @@
 #include <SFML/System.hpp>
 #include "Chess.hpp"
 #include "AI.hpp"
+#include "Tree.hpp"
 using namespace std;
 using namespace sf;
 
@@ -45,6 +46,7 @@ int main()
 
 	Chess chess;
 	AI ai(chess,Black);
+	MoveTree tree(Black,2);
     vector<Coord> moves;
 	Coord selPos(-1,-1);
 	bool whiteMove = true;
@@ -76,6 +78,7 @@ int main()
 							badMove.play();
 						else {
 							whiteMove = !whiteMove;
+							tree.makeMove(make_pair(selPos,square));
 							skipAI = true;
 							if (chess.inStalemate(White) || chess.inStalemate(Black)) {
 								done = true;
@@ -106,8 +109,9 @@ int main()
 		if (!whiteMove && !done && !skipAI) {
 			natDelay = 0;
 			whiteMove = true;
-			pair<Coord,Coord> mv = ai.getMove();
+			pair<Coord,Coord> mv = tree.getBestMove();
 			chess.makeMove(Black,mv.first,mv.second,Queen);
+			tree.makeMove(mv);
 		}
 
 		bool drawBlack = false;

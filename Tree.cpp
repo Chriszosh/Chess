@@ -1,3 +1,4 @@
+#include <cmath>
 #include "Tree.hpp"
 using namespace std;
 
@@ -54,7 +55,10 @@ void MoveTreeNode::updateScore()
 			children[h]->updateScore();
 			avg += children[h]->data.score;
 		}
-		avg /= moves.size();
+		if (moves.size()>0)
+			avg /= sqrt(moves.size());
+		else
+			avg = ((data.toMove==White)?(-1):(1))*10000;
 	}
 	data.score = data.position.getScore()+avg;
 }

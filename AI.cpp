@@ -17,11 +17,10 @@ int AI::scoreMove(Chess& b, Coord oPos, Coord nPos, int dt)
 	int off = 0;
 
 	b.makeMove(moved,oPos,nPos,Queen);
-	score = b.getScore();
-	off = score;
 
 	//do more moves if not at depth
 	Coord c;
+	int n = 0;
 	if (dt>=0){
 		for (int x = 0; x<8; ++x) {
 			for (int y = 0; y<8; ++y) {
@@ -31,12 +30,16 @@ int AI::scoreMove(Chess& b, Coord oPos, Coord nPos, int dt)
 					for (unsigned int i = 0; i<moves.size(); ++i) {
                         Chess t = b;
                         int ts = scoreMove(t,c,moves[i],dt-1);
-                        score += ts-off;
+                        score += ts;
+                        n++;
 					}
 				}
 			}
 		}
 	}
+	if (n>0)
+		score /= n;
+	score += b.getScore();
 
     return score;
 }
