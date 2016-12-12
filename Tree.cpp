@@ -63,3 +63,42 @@ NodeData& MoveTreeNode::getData()
 {
 	return data;
 }
+
+MoveTree::MoveTree(Color me, int d)
+{
+	mult = (me==White)?(1):(-1);
+	depth = d;
+	root = new MoveTreeNode(Chess(),White);
+	root->spawnChildren(depth);
+	root->updateScore();
+}
+
+MoveTree::~MoveTree()
+{
+	delete root;
+}
+
+pair<Coord,Coord> MoveTree::getBestMove()
+{
+	int mI = -1, mx = -10000000;
+	for (unsigned int i = 0; i<root->moves.size(); ++i) {
+		if (root->children[root->calcIndex(root->moves[i])]->getData().score*mult>=mx) {
+			mx = root->children[root->calcIndex(root->moves[i])]->getData().score*mult;
+			mI = i;
+		}
+	}
+	return root->moves[mI];
+}
+
+void MoveTree::makeMove(pair<Coord, Coord> m)
+{
+	int nr = root->calcIndex(m);
+	for (unsigned int i = 0; i<root->moves.size(); ++i) {
+		int j = root->calcIndex(root->moves[i]);
+		if (j!=nr)
+			delete root->children[j];
+	}
+	root = root->children[nr];
+	root->spawnChildren(depth);
+	root->updateScore();
+}

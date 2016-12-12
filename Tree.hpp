@@ -3,6 +3,8 @@
 
 #include "Chess.hpp"
 
+class MoveTree;
+
 /**
  * Basic structure containing a position and a score, used in the Tree
  */
@@ -22,6 +24,8 @@ class MoveTreeNode
 	std::vector<std::pair<Coord,Coord> > moves;
     MoveTreeNode* children[4096];
     bool isLeaf, scoreValid;
+
+    friend class MoveTree;
 
     /**
      * Special hash that maps moves onto our array
@@ -56,6 +60,43 @@ public:
 	 * Returns the data for this node
 	 */
 	NodeData& getData();
+};
+
+/**
+ * Tree class for storing possible continuations
+ */
+class MoveTree
+{
+    MoveTreeNode* root;
+    int mult; //always select highest score. Set this to -1 to get lowest score
+    int depth;
+
+public:
+	/**
+	 * Initializes the internal board and the tree to the right depth
+	 *
+	 * \param me The color to play as
+	 * \param d The depth to calculate to
+	 */
+	MoveTree(Color me, int d = 3);
+
+	/**
+	 * Frees all memory
+	 */
+	~MoveTree();
+
+	/**
+	 * Returns the best move but makes no changes
+	 */
+	std::pair<Coord,Coord> getBestMove();
+
+	/**
+	 * Makes the move on the internal board, resets the tree roots and calculates another level of moves
+	 *
+	 * \param mover The color moving
+	 * \param m The move to make
+	 */
+    void makeMove(std::pair<Coord,Coord> m);
 };
 
 #endif // TREE_HPP
