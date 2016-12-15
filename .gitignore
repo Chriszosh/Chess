@@ -1,4 +1,7 @@
 *.layout
 *.depend
+*.ini
+*.o
+*.rar
 bin/
 obj/
