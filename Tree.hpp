@@ -1,6 +1,7 @@
 #ifndef TREE_HPP
 #define TREE_HPP
 
+#include <SFML/System.hpp>
 #include "Chess.hpp"
 
 class MoveTree;
@@ -71,14 +72,33 @@ class MoveTree
     int mult; //always select highest score. Set this to -1 to get lowest score
     int depth;
 
+    sf::Thread** threads;
+    int threadIdCounter, numThreads;
+    int* threadRanges;
+    sf::Mutex lock;
+
+    /**
+     * Updates the tree for the root moves given
+     *
+     * \param mn The inclusive minimum to start at
+     * \param mx The exclusive mx to end at
+     */
+    void calcTree();
+
+    /**
+     * Updates the tree by ensuring that it is the proper depth
+     */
+	void update();
+
 public:
 	/**
 	 * Initializes the internal board and the tree to the right depth
 	 *
 	 * \param me The color to play as
 	 * \param d The depth to calculate to
+	 * \param nt The number of threads to use
 	 */
-	MoveTree(Color me, int d = 3);
+	MoveTree(Color me, int d = 3, int nt = 8);
 
 	/**
 	 * Frees all memory

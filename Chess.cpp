@@ -63,7 +63,7 @@ vector<Coord> Chess::getControlledSquares(Board& white, Board& black, Color colo
 
     if (color!=White && color!=Black) //return empty list if we get a bad color
 		return squares;
-	Piece piece = (color==White)?((*board[color]).pieces[pos.x][pos.y]):((*board[color]).pieces[pos.x][7-pos.y]); //reverse black to actually get piece
+	Piece piece = Piece((color==White)?((*board[color]).pieces[pos.x][pos.y]):((*board[color]).pieces[pos.x][7-pos.y])); //reverse black to actually get piece
 
 	Coord check, dif;
 	Color tCol;
@@ -209,7 +209,7 @@ bool Chess::inCheck(Board& white, Board& black, Color color) {
 bool Chess::moveIsLegal(Color color, Coord oPos, Coord nPos)
 {
 	Color enemy = (color==White)?(Black):(White);
-    Piece piece = pieces[color].pieces[oPos.x][(color==White)?(oPos.y):(7-oPos.y)];
+    Piece piece = Piece(pieces[color].pieces[oPos.x][(color==White)?(oPos.y):(7-oPos.y)]);
     vector<Coord> posSquares = getControlledSquares(pieces[White],pieces[Black],color,oPos);
 
     //see if a piece is moving to a valid square and that the new position isn't check
@@ -306,7 +306,7 @@ bool Chess::moveIsLegal(Color color, Coord oPos, Coord nPos)
 bool Chess::makeMove(Color color, Coord oPos, Coord nPos, Piece promotion)
 {
 	Color enemy = (color==White)?(Black):(White);
-	Piece piece = pieces[color].pieces[oPos.x][(color==White)?(oPos.y):(7-oPos.y)];
+	Piece piece = Piece(pieces[color].pieces[oPos.x][(color==White)?(oPos.y):(7-oPos.y)]);
 
 	//make sure it's legal
 	if (!moveIsLegal(color,oPos,nPos))
@@ -375,13 +375,13 @@ Color Chess::squareOccupied(Coord pos)
 
 Piece Chess::getPiece(Coord pos, Color color)
 {
-	return pieces[color].pieces[pos.x][(color==White)?(pos.y):(7-pos.y)];
+	return Piece(pieces[color].pieces[pos.x][(color==White)?(pos.y):(7-pos.y)]);
 }
 
 vector<Coord> Chess::getLegalMoves(Coord pos)
 {
 	Color color = squareOccupied(pos);
-	Piece piece = pieces[color].pieces[pos.x][(color==White)?(pos.y):(7-pos.y)];
+	Piece piece = Piece(pieces[color].pieces[pos.x][(color==White)?(pos.y):(7-pos.y)]);
 	vector<Coord> squares = getControlledSquares(pieces[White],pieces[Black],color,pos);
 
 	for (unsigned int i = 0; i<squares.size(); ++i) {

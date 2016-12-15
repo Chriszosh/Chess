@@ -64,7 +64,7 @@ enum Color {
  * Container class for storing pieces. This is kept separate from Chess so temporary positions can be created to help determine if moves are legal
  */
 struct Board {
-	Piece pieces[8][8];
+	int8_t pieces[8][8];
 
 	/**
 	 * Default constructor. Sets the board to the starting position

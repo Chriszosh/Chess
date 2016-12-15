@@ -1,6 +1,9 @@
 #include <cmath>
+#include <thread>
+#include <iostream>
 #include "Tree.hpp"
 using namespace std;
+using namespace sf;
 
 MoveTreeNode::MoveTreeNode(Chess pos, Color toMove)
 {
@@ -26,6 +29,7 @@ int MoveTreeNode::calcIndex(pair<Coord,Coord> m)
 void MoveTreeNode::spawnChildren(int depth)
 {
 	if (depth>=0) {
+		scoreValid = false;
 		if (isLeaf) {
 			isLeaf = false;
 			moves = data.position.getAllMoves(data.toMove);
@@ -48,7 +52,7 @@ void MoveTreeNode::spawnChildren(int depth)
 void MoveTreeNode::updateScore()
 {
 	int avg = 0;
-	if (!isLeaf) {
+	if (!isLeaf && !scoreValid) {
 		//update children and get average
 		for (unsigned int i = 0; i<moves.size(); ++i) {
 			int h = calcIndex(moves[i]);
@@ -60,7 +64,8 @@ void MoveTreeNode::updateScore()
 		else
 			avg = ((data.toMove==White)?(-1):(1))*10000;
 	}
-	data.score = data.position.getScore()+avg;
+	else if (!scoreValid)
+		data.score = data.position.getScore()+avg;
 }
 
 NodeData& MoveTreeNode::getData()
@@ -68,18 +73,60 @@ NodeData& MoveTreeNode::getData()
 	return data;
 }
 
-MoveTree::MoveTree(Color me, int d)
+MoveTree::MoveTree(Color me, int d, int nt)
 {
 	mult = (me==White)?(1):(-1);
 	depth = d;
 	root = new MoveTreeNode(Chess(),White);
 	root->spawnChildren(depth);
 	root->updateScore();
+
+	numThreads = nt;
+	threadIdCounter = 0;
+	threads = new Thread*[nt];
+	threadRanges = new int[nt*2];
+	for (int i = 0; i<nt; ++i) {
+		threads[i] = new Thread(&MoveTree::calcTree,this);
+	}
+	update();
 }
 
 MoveTree::~MoveTree()
 {
 	delete root;
+}
+
+void MoveTree::calcTree()
+{
+	lock.lock();
+	int i = threadIdCounter;
+	cout << "Thread " << threadIdCounter << " spawned\n";
+	threadIdCounter++;
+	lock.unlock();
+
+
+	int mn = threadRanges[i*2];
+	int mx = threadRanges[i*2+1];
+	for (int i = mn; i<mx; ++i) {
+		int h = root->calcIndex(root->moves[i]);
+		root->children[h]->spawnChildren(depth-1);
+		root->children[h]->updateScore();
+	}
+}
+
+void MoveTree::update()
+{
+	double rng = double(root->moves.size())/double(numThreads);
+	cout << "Range is: " << rng << endl;
+	threadIdCounter = 0;
+	for (int i = 0; i<numThreads; ++i) {
+		threadRanges[i*2] = i*rng;
+		threadRanges[i*2+1] = i*rng+rng;
+		threads[i]->launch();
+	}
+	for (int i = 0; i<numThreads; ++i)
+		threads[i]->wait();
+	root->updateScore();
 }
 
 pair<Coord,Coord> MoveTree::getBestMove()
@@ -103,6 +150,5 @@ void MoveTree::makeMove(pair<Coord, Coord> m)
 			delete root->children[j];
 	}
 	root = root->children[nr];
-	root->spawnChildren(depth);
-	root->updateScore();
+	update();
 }
