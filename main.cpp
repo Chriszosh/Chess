@@ -68,7 +68,7 @@ int main()
 					}
 					else {
 						::Color moveCol = whiteMove?(White):(Black);
-						if (!chess.makeMove(moveCol,selPos,square))
+						if (!chess.makeMove(moveCol,selPos,square,Queen))
 							badMove.play();
 						else {
 							whiteMove = !whiteMove;

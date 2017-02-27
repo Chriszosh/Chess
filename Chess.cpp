@@ -357,12 +357,12 @@ bool Chess::makeMove(Color color, Coord oPos, Coord nPos, Piece promotion)
 bool Chess::makeMove(Color color, Piece piece, Coord pos, Coord disam, Piece promotion) {
 	for (int i = 0; i<8; ++i) {
 		for (int j = 0; j<8; ++j) {
-			if (pieces[color].pieces[i][(color==White)?(j):(j)]==piece) {
+			if (pieces[color].pieces[i][j]==piece) {
 				if (disam.x!=i && disam.x!=-1)
 					continue;
-				if (disam.y!=j && disam.y!=-1)
+				if (disam.y!=((color==White)?(j):(7-j)) && disam.y!=-1)
 					continue;
-				if (makeMove(color,Coord(i,j),pos,promotion))
+				if (makeMove(color,Coord(i,(color==White)?(j):(7-j)),pos,promotion))
 					return true; //found piece and it can move there
 			}
 		}
@@ -378,7 +378,7 @@ bool Chess::makeMove(Color color, string move) {
 
 		//capture
 		if (move[1]=='x') {
-			pos = Coord(move[2]-'a',move[3]-'1');
+			pos = Coord(move[2]-'a',7-move[3]+'1');
 			if (move[4]=='=') { //promoting
 				switch (move[5]) {
 					case 'Q':
@@ -402,7 +402,7 @@ bool Chess::makeMove(Color color, string move) {
 		}
 		//push
 		else {
-			pos.y = move[1]-'1';
+			pos.y = 7-move[1]+'1';
 			if (move[2]=='=') { //promoting
 				switch (move[3]) {
 					case 'Q':
@@ -459,7 +459,7 @@ bool Chess::makeMove(Color color, string move) {
 			++i;
 
 		if (move[i]>='1' && move[i]<='8') { //rank disambiguation
-			disam.y = move[i]-'1';
+			disam.y = 7-move[i]+'1';
 			++i;
 		}
 		if (move[i]=='x') //skip capture flag
@@ -481,7 +481,7 @@ bool Chess::makeMove(Color color, string move) {
 			++i;
 
 		if (move[i]>='1' && move[i]<='8') { //rank pos
-			pos.y = move[i]-'1';
+			pos.y = 7-move[i]+'1';
 			++i;
 		}
 
@@ -490,7 +490,7 @@ bool Chess::makeMove(Color color, string move) {
 
 	//castling
 	else {
-		Coord pos(2,(color==White)?(0):(7));
+		Coord pos(2,(color==White)?(7):(0));
 		if (move=="O-O")
 			pos.x = 6;
         return makeMove(color,King,pos);
