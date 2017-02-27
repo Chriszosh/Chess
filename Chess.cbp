@@ -54,6 +54,8 @@
 		</Compiler>
 		<Unit filename="Chess.cpp" />
 		<Unit filename="Chess.hpp" />
+		<Unit filename="PGN.cpp" />
+		<Unit filename="PGN.hpp" />
 		<Unit filename="main.cpp" />
 		<Extensions>
 			<code_completion />

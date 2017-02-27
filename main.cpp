@@ -4,12 +4,27 @@
 #include <SFML/Audio.hpp>
 #include <SFML/System.hpp>
 #include "Chess.hpp"
+#include "PGN.hpp"
 using namespace std;
 using namespace sf;
 
+void guiGame();
+
 int main()
 {
-    int size = VideoMode::getDesktopMode().height/1.2;
+    PGN pgn("data/games.pgn");
+    pgn.addAllowedYear(2016);
+    pgn.setMinimumMonth(2);
+    pgn.setPlayer("reidben24");
+    pgn.parse();
+    vector<Game> games = pgn.getGames();
+    cout << "Loaded " << games.size() << " games\n\n";
+
+	return 0;
+}
+
+void guiGame() {
+	int size = VideoMode::getDesktopMode().height/1.2;
 	RenderWindow window(VideoMode(size,size,32), "Chess | White to move", Style::Titlebar|Style::Close);
 	Music badMove;
 	RectangleShape whiteSquare(Vector2f(size/8,size/8)), blackSquare(Vector2f(size/8,size/8)), highlight(Vector2f(size/8,size/8));
@@ -133,6 +148,4 @@ int main()
 
 		sleep(milliseconds(30));
 	}
-
-	return 0;
 }
