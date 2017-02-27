@@ -42,7 +42,7 @@ int main()
 		}
 	}
 
-	Game chess;
+	Chess chess;
     vector<Coord> moves;
 	Coord selPos(-1,-1);
 	bool whiteMove = true;
