@@ -374,6 +374,7 @@ bool Chess::makeMove(Color color, string move) {
 	//pawn move
 	if (move[0]>='a' && move[0]<='h') {
 		Coord pos(move[0]-'a',0);
+		Coord disam(move[0]-'a',-1);
 		Piece promo = Queen;
 
 		//capture
@@ -398,7 +399,7 @@ bool Chess::makeMove(Color color, string move) {
 						break;
 				}
 			}
-			return makeMove(color,Pawn,pos,Coord(-1,-1),promo);
+			return makeMove(color,Pawn,pos,disam,promo);
 		}
 		//push
 		else {
@@ -422,7 +423,7 @@ bool Chess::makeMove(Color color, string move) {
 						break;
 				}
 			}
-			return makeMove(color,Pawn,pos,Coord(-1,-1),promo);
+			return makeMove(color,Pawn,pos,disam,promo);
 		}
 	}
 

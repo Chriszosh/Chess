@@ -63,7 +63,6 @@ void PGN::setMinimumMonth(int m) {
 void PGN::parse() {
 	Game temp;
 	bool keep = true;
-	bool isWhite = true;
 
 	ifstream input(file.c_str());
 	string data;
@@ -89,21 +88,21 @@ void PGN::parse() {
 				getline(input,data,'"');
 				getline(input,data,'"');
 				if (data==playerName)
-					isWhite = true;
+					temp.isWhite = true;
 				else
-					isWhite = false;
+					temp.isWhite = false;
             }
             else if (data=="Result") {
 				getline(input,data,'"');
 				getline(input,data,'"');
                 if (data=="1-0") {
-					if (isWhite)
+					if (temp.isWhite)
 						temp.result = Game::Win;
 					else
 						temp.result = Game::Loss;
                 }
                 else if (data=="0-1") {
-					if (isWhite)
+					if (temp.isWhite)
 						temp.result = Game::Loss;
 					else
 						temp.result = Game::Win;
@@ -115,14 +114,14 @@ void PGN::parse() {
 				getline(input,data,'"');
 				getline(input,data,'"');
 				int r = stringToInt(data);
-				if (!isWhite)
+				if (!temp.isWhite)
 					temp.rating = r;
             }
             else if (data=="WhiteElo") {
 				getline(input,data,'"');
 				getline(input,data,'"');
 				int r = stringToInt(data);
-				if (isWhite)
+				if (temp.isWhite)
 					temp.rating = r;
             }
             else if (data=="Variant") {

@@ -20,6 +20,25 @@ int main()
     vector<Game> games = pgn.getGames();
     cout << "Loaded " << games.size() << " games\n\n";
 
+    for (unsigned int i = 0; i<games.size(); ++i) {
+        Chess game;
+        bool whiteMove = true;
+        for (unsigned int j = 0; j<games[i].moves.size(); ++j) {
+            if (!game.makeMove((whiteMove)?(White):(Black),games[i].moves[j])) {
+				cout << "Failed to make move " << (j/2+1) << ". " << ((!whiteMove)?("..."):("")) << games[i].moves[j] << endl;
+				cout << "Game: ";
+				for (unsigned int k = 0; k<games[i].moves.size(); ++k) {
+					if (k%2==0)
+						cout << " " << (k/2+1) << ".";
+					cout << " " << games[i].moves[k] << " ";
+				}
+				cout << endl;
+				break;
+            }
+            whiteMove = !whiteMove;
+        }
+    }
+
 	return 0;
 }
 

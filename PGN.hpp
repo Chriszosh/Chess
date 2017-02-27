@@ -9,6 +9,7 @@
  */
 struct Game {
 	std::vector<std::string> moves;
+	bool isWhite;
 	enum Outcome {
 		Win,
 		Loss,
