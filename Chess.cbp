@@ -56,6 +56,8 @@
 		<Unit filename="Chess.hpp" />
 		<Unit filename="PGN.cpp" />
 		<Unit filename="PGN.hpp" />
+		<Unit filename="Stockfish.cpp" />
+		<Unit filename="Stockfish.hpp" />
 		<Unit filename="main.cpp" />
 		<Extensions>
 			<code_completion />
