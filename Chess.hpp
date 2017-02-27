@@ -160,10 +160,20 @@ public:
 	 * \param color The color of the piece to move
 	 * \param piece The type of piece to move
 	 * \param pos The square to move the piece to
+	 * \param disam Disambiguation coordinate
 	 * \param promotion What to promote to if applicable
 	 * \return True if the piece was moved, false otherwise
 	 */
-	bool makeMove(Color color, Piece piece, Coord pos, Piece promotion);
+	bool makeMove(Color color, Piece piece, Coord pos, Coord disam = Coord(-1,-1), Piece promotion = Queen);
+
+	/**
+	 * Yet another version of the makeMove function. This one takes chess notation directly
+	 *
+	 * \param color The color to move
+	 * \param move A string containing valid chess notation. e.g Nb6
+	 * \return Whether or not the move was made
+	 */
+	bool makeMove(Color color, std::string move);
 
 	/**
 	 * Returns a Board containing the requested pieces with white at the bottom
