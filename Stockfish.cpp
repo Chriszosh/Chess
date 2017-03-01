@@ -2,23 +2,105 @@
 #include "Stockfish.hpp"
 using namespace std;
 
-Stockfish::Stockfish(string exepath) {
-    CreatePipe( &hPipeRead, &hPipeWrite, 0, 0 );
-    hConOut = GetStdHandle( STD_OUTPUT_HANDLE );
-    SetStdHandle( STD_OUTPUT_HANDLE, hPipeWrite );
+void Stockfish::WriteToPipe(string msg) {
+    WriteFile(g_hChildStd_IN_Wr, msg.c_str(), msg.size(), NULL, NULL);
+}
 
-    startInfo = { sizeof(STARTUPINFO) };
-    CreateProcess( exepath.c_str(), "", 0, 0, false, 0, 0, 0, &startInfo, &procInfo );
+vector<string> Stockfish::ReadFromPipe(void) {
+    DWORD dwRead, dwWritten;
+    CHAR chBuf[BUFFER_SIZE];
+    BOOL bSuccess = FALSE;
+    HANDLE hParentStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
-    SetStdHandle( STD_OUTPUT_HANDLE, hConOut );
+    vector<string> ret;
+    string temp;
 
-    nRead = 0;
-    ReadFile( hPipeRead, buffer, BUFFER_SIZE - 1, &nRead, 0 );
-    buffer[ nRead ] = 0;
-    std::cout << "\n=====\n" << buffer << "\n=====\n";
-    WriteFile(hPipeWrite,"uci",3,&nRead,NULL);
-    ReadFile( hPipeRead, buffer, BUFFER_SIZE - 1, &nRead, 0 );
-    buffer[ nRead ] = 0;
-    std::cout << "\n=====\n" << buffer << "\n=====\n";
+    for (;;)
+    {
+        bSuccess = ReadFile(g_hChildStd_OUT_Rd, chBuf, BUFFER_SIZE, &dwRead, NULL);
+        if( ! bSuccess || dwRead == 0 )
+			break;
+        for (int i = 0; i<dwRead; ++i) {
+            if (chBuf[i]=='\n') {
+				ret.push_back(temp);
+				temp.clear();
+            }
+            else
+				temp.push_back(chBuf[i]);
+        }
+    }
+
+    cout << "Read: ";
+    for (unsigned int i = 0; i<ret.size(); ++i) {
+        cout << i+1 << ": " << ret[i] << endl;
+    }
+    return ret;
+}
+
+Stockfish::Stockfish() {
+    g_hChildStd_OUT_Rd = NULL;
+    g_hChildStd_IN_Wr = NULL;
+    g_hChildStd_OUT_Rd = NULL;
+    g_hChildStd_OUT_Wr = NULL;
+
+    /*
+     * CREATE PIPES
+    */
+    // Set the bInheritHandle flag so pipe handles are inherited.
+    saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
+    saAttr.bInheritHandle = TRUE;
+    saAttr.lpSecurityDescriptor = NULL;
+
+    // Create pipes for the child process's STDOUT and STDIN,
+    // ensures both handle are not inherited
+    CreatePipe(&g_hChildStd_OUT_Rd, &g_hChildStd_OUT_Wr, &saAttr, 0);
+    SetHandleInformation(g_hChildStd_OUT_Rd, HANDLE_FLAG_INHERIT, 0);
+
+    CreatePipe(&g_hChildStd_IN_Rd, &g_hChildStd_IN_Wr, &saAttr, 0);
+    SetHandleInformation(g_hChildStd_IN_Wr, HANDLE_FLAG_INHERIT, 0);
+
+    /*
+     * CREATE CHILD PROCESS
+    */
+
+    TCHAR szCmdline[]=TEXT("Stockfish/Windows/stockfish_8_x64.exe");
+    STARTUPINFO siStartInfo;
+    PROCESS_INFORMATION piProcInfo;
+
+    // Set up members of the PROCESS_INFORMATION structure.
+    ZeroMemory( &piProcInfo, sizeof(PROCESS_INFORMATION) );
+
+    // Set up members of the STARTUPINFO structure.
+    // This structure specifies the STDIN and STDOUT handles for redirection.
+    ZeroMemory( &siStartInfo, sizeof(STARTUPINFO) );
+    siStartInfo.cb = sizeof(STARTUPINFO);
+    siStartInfo.hStdError  = g_hChildStd_OUT_Wr;
+    siStartInfo.hStdOutput = g_hChildStd_OUT_Wr;
+    siStartInfo.hStdInput  = g_hChildStd_IN_Rd;
+    siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
+
+    CreateProcess(NULL, szCmdline, NULL, NULL, TRUE, 0,
+                  NULL,  NULL, &siStartInfo, &piProcInfo);
+
+    // Close handles to the child process and its primary thread.
+    // Some applications might keep these handles to monitor the status
+    // of the child process, for example.
+    CloseHandle(g_hChildStd_OUT_Wr);
+    CloseHandle(g_hChildStd_IN_Rd);
+    CloseHandle(piProcInfo.hProcess);
+    CloseHandle(piProcInfo.hThread);
+
+    /*
+     * ACTUAL APPLICATION
+    */
+
+    WriteToPipe("uci");
+
+    // Need to close the handle before reading
+    CloseHandle(g_hChildStd_IN_Wr); // PROBLEM HERE
+
+    ReadFromPipe();
+
+    WriteToPipe("<56>\n"); // I can't, as I have released the handle already
 }
 

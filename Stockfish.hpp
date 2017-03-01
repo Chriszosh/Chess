@@ -3,6 +3,7 @@
 
 #include <windows.h>
 #include <string>
+#include <vector>
 
 /**
  * Class to interface with Stockfish
@@ -11,19 +12,20 @@ class Stockfish {
 	static const DWORD BUFFER_SIZE = 8192;
     char buffer[ BUFFER_SIZE ] ;
 
-    HANDLE hPipeRead, hPipeWrite;
-    HANDLE hConOut;
-    STARTUPINFO startInfo;
-    PROCESS_INFORMATION procInfo;
-    DWORD nRead;
+    SECURITY_ATTRIBUTES saAttr;
+    HANDLE g_hChildStd_OUT_Rd;
+	HANDLE g_hChildStd_OUT_Wr;
+	HANDLE g_hChildStd_IN_Rd;
+	HANDLE g_hChildStd_IN_Wr;
+
+	void WriteToPipe(std::string msg);
+	std::vector<std::string> ReadFromPipe();
 
 public:
 	/**
 	 * Launches Stockfish and creates the pipes to communicate with it
-	 *
-	 * \param exepath The executable of Stockfish
 	 */
-	Stockfish(std::string exepath);
+	Stockfish();
 
 	/**
 	 * Sets the position in the engine via a fen string

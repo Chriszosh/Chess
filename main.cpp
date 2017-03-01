@@ -13,7 +13,7 @@ void guiGame();
 
 int main()
 {
-	Stockfish fish("Stockfish/Windows/stockfish_8_x64.exe");
+	Stockfish fish;
 	return 0;
 
     PGN pgn("data/games.pgn");
