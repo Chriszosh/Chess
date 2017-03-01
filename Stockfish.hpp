@@ -1,11 +1,21 @@
 #ifndef STOCKFISH_HPP
 #define STOCKFISH_HPP
 
+#include <windows.h>
+#include <string>
+
 /**
  * Class to interface with Stockfish
  */
 class Stockfish {
-	//pipe data
+	static const DWORD BUFFER_SIZE = 8192;
+    char buffer[ BUFFER_SIZE ] ;
+
+    HANDLE hPipeRead, hPipeWrite;
+    HANDLE hConOut;
+    STARTUPINFO startInfo;
+    PROCESS_INFORMATION procInfo;
+    DWORD nRead;
 
 public:
 	/**

@@ -5,6 +5,7 @@
 #include <SFML/System.hpp>
 #include "Chess.hpp"
 #include "PGN.hpp"
+#include "Stockfish.hpp"
 using namespace std;
 using namespace sf;
 
@@ -12,6 +13,9 @@ void guiGame();
 
 int main()
 {
+	Stockfish fish("Stockfish/Windows/stockfish_8_x64.exe");
+	return 0;
+
     PGN pgn("data/games.pgn");
     pgn.addAllowedYear(2016);
     pgn.setMinimumMonth(2);
