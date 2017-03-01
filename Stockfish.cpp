@@ -1,4 +1,5 @@
 #include <iostream>
+#include <SFML/System.hpp>
 #include "Stockfish.hpp"
 using namespace std;
 
@@ -6,21 +7,26 @@ void Stockfish::WriteToPipe(string msg) {
     WriteFile(g_hChildStd_IN_Wr, msg.c_str(), msg.size(), NULL, NULL);
 }
 
-vector<string> Stockfish::ReadFromPipe(void) {
-    DWORD dwRead, dwWritten;
+vector<string> Stockfish::ReadFromPipe() {
+    DWORD dwRead, dwAvailableBytes, dwBytesLeft;
     CHAR chBuf[BUFFER_SIZE];
     BOOL bSuccess = FALSE;
-    HANDLE hParentStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
     vector<string> ret;
     string temp;
 
-    for (;;)
-    {
-        bSuccess = ReadFile(g_hChildStd_OUT_Rd, chBuf, BUFFER_SIZE, &dwRead, NULL);
-        if( ! bSuccess || dwRead == 0 )
-			break;
-        for (int i = 0; i<dwRead; ++i) {
+    cout << "Trying to read from pipe...\n";
+    WriteToPipe("jdhufdhudf");
+    while (!bSuccess || dwRead==0) {
+        //bSuccess = ReadFile(g_hChildStd_OUT_Rd, chBuf, BUFFER_SIZE, &dwRead, NULL);
+        bSuccess = PeekNamedPipe(g_hChildStd_OUT_Rd, chBuf, BUFFER_SIZE, &dwRead, &dwAvailableBytes, &dwBytesLeft);
+        if (bSuccess && dwAvailableBytes>0) {
+			cout << "Success! " << dwAvailableBytes << " bytes available. " << dwBytesLeft << " bytes left\n";
+			ReadFile(g_hChildStd_OUT_Rd, chBuf, dwAvailableBytes, &dwRead, NULL);
+        }
+       // if (!bSuccess || dwRead==0)
+		//	break;
+        for (unsigned int i = 0; i<dwRead; ++i) {
             if (chBuf[i]=='\n') {
 				ret.push_back(temp);
 				temp.clear();
@@ -95,10 +101,10 @@ Stockfish::Stockfish() {
     */
 
     WriteToPipe("uci");
+    //CloseHandle(g_hChildStd_IN_Wr);
 
-    // Need to close the handle before reading
-    CloseHandle(g_hChildStd_IN_Wr); // PROBLEM HERE
-
+    sf::sleep(sf::milliseconds(1000));
+    ReadFromPipe();
     ReadFromPipe();
 
     WriteToPipe("<56>\n"); // I can't, as I have released the handle already
