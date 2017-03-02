@@ -15,31 +15,22 @@ vector<string> Stockfish::ReadFromPipe() {
     vector<string> ret;
     string temp;
 
-    cout << "Trying to read from pipe...\n";
-    WriteToPipe("jdhufdhudf");
-    while (!bSuccess || dwRead==0) {
-        //bSuccess = ReadFile(g_hChildStd_OUT_Rd, chBuf, BUFFER_SIZE, &dwRead, NULL);
-        bSuccess = PeekNamedPipe(g_hChildStd_OUT_Rd, chBuf, BUFFER_SIZE, &dwRead, &dwAvailableBytes, &dwBytesLeft);
-        if (bSuccess && dwAvailableBytes>0) {
-			cout << "Success! " << dwAvailableBytes << " bytes available. " << dwBytesLeft << " bytes left\n";
-			ReadFile(g_hChildStd_OUT_Rd, chBuf, dwAvailableBytes, &dwRead, NULL);
-        }
-       // if (!bSuccess || dwRead==0)
-		//	break;
-        for (unsigned int i = 0; i<dwRead; ++i) {
-            if (chBuf[i]=='\n') {
-				ret.push_back(temp);
-				temp.clear();
-            }
-            else
-				temp.push_back(chBuf[i]);
-        }
-    }
+	bSuccess = PeekNamedPipe(g_hChildStd_OUT_Rd, chBuf, BUFFER_SIZE, &dwRead, &dwAvailableBytes, &dwBytesLeft);
+	if (bSuccess && dwAvailableBytes>0) {
+		cout << "Success! " << dwAvailableBytes << " bytes available. " << dwBytesLeft << " bytes left\n";
+		ReadFile(g_hChildStd_OUT_Rd, chBuf, dwAvailableBytes, &dwRead, NULL);
+	}
+   // if (!bSuccess || dwRead==0)
+	//	break;
+	for (unsigned int i = 0; i<dwRead; ++i) {
+		if (chBuf[i]=='\n') {
+			ret.push_back(temp);
+			temp.clear();
+		}
+		else if (chBuf[i]!='\r')
+			temp.push_back(chBuf[i]);
+	}
 
-    cout << "Read: ";
-    for (unsigned int i = 0; i<ret.size(); ++i) {
-        cout << i+1 << ": " << ret[i] << endl;
-    }
     return ret;
 }
 
@@ -100,13 +91,17 @@ Stockfish::Stockfish() {
      * ACTUAL APPLICATION
     */
 
-    WriteToPipe("uci");
-    //CloseHandle(g_hChildStd_IN_Wr);
-
-    sf::sleep(sf::milliseconds(1000));
     ReadFromPipe();
-    ReadFromPipe();
-
-    WriteToPipe("<56>\n"); // I can't, as I have released the handle already
+    WriteToPipe("uci\n");
+    vector<string> ms;
+    while (true) {
+		ms = ReadFromPipe();
+		for (unsigned int i = 0; i<ms.size(); ++i) {
+			cout << '"' << ms[i] << '"' << endl;
+			if (ms[i]=="uciok")
+				goto done;
+		}
+    }
+    done:;
 }
 

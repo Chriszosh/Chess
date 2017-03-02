@@ -13,8 +13,8 @@ void guiGame();
 
 int main()
 {
-	Stockfish fish;
-	return 0;
+	//Stockfish fish;
+	//return 0;
 
     PGN pgn("data/games.pgn");
     pgn.addAllowedYear(2016);
