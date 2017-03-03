@@ -87,6 +87,8 @@ class Chess {
 	Coord enPassant[2]; //if a pawn is double pushed the square behind it goes in here. Index is color being captured
     bool rookMoved[2][2]; //use these for castling. The first index is the color, the second index is which rook (A = 0, H = 1)
     bool kingMoved[2]; //also use this for castling. Index is color
+    bool whiteMove;
+    int moveC;
 
     /**
      * Determines if the given coordinate is on the board
@@ -214,6 +216,13 @@ public:
 	 * \return True if the color is in stalemate, false otherwise
 	 */
 	bool inStalemate(Color color);
+
+	/**
+	 * Returns a FEN string of the current position
+	 *
+	 * \return A FEN string
+	 */
+	std::string getFEN();
 };
 
 #endif // CHESS_HPP

@@ -16,6 +16,8 @@ int main()
 	//Stockfish fish;
 	//return 0;
 
+	guiGame();
+
     PGN pgn("data/games.pgn");
     pgn.addAllowedYear(2016);
     pgn.setMinimumMonth(2);
@@ -109,6 +111,7 @@ void guiGame() {
 						if (!chess.makeMove(moveCol,selPos,square,Queen))
 							badMove.play();
 						else {
+							cout << chess.getFEN() << endl;
 							whiteMove = !whiteMove;
 							if (chess.inStalemate(White) || chess.inStalemate(Black)) {
 								done = true;

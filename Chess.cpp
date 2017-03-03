@@ -1,4 +1,5 @@
 #include <cmath>
+#include <sstream>
 #include <iostream>
 #include "Chess.hpp"
 using namespace std;
@@ -27,6 +28,8 @@ Board::Board(const Board& b) {
 }
 
 Chess::Chess() {
+	whiteMove = true;
+	moveC = 1;
     for (int i = 0; i<2; ++i) {
 		kingMoved[i] = false;
 		enPassant[i] = Coord(-1,-1);
@@ -351,6 +354,9 @@ bool Chess::makeMove(Color color, Coord oPos, Coord nPos, Piece promotion)
 			pieces[color].pieces[nPos.x][(color==White)?(nPos.y):(7-nPos.y)] = promotion;
 	}
 
+	if (!whiteMove)
+		moveC++;
+	whiteMove = !whiteMove;
 	return true;
 }
 
@@ -573,4 +579,121 @@ bool Chess::inStalemate(Color color)
     }
 
     return true;
+}
+
+string Chess::getFEN() {
+    stringstream ret;
+    int nEmpty = 0;
+    bool c = false;
+
+    for (int j = 0; j<8; ++j) {
+        for (int i = 0; i<8; ++i) {
+            if (pieces[White].pieces[i][j]!=Empty) {
+				if (nEmpty>0) {
+					ret << nEmpty;
+					nEmpty = 0;
+				}
+				switch (pieces[White].pieces[i][j]) {
+					case Pawn:
+					ret << "P";
+					break;
+
+					case Rook:
+					ret << "R";
+					break;
+
+					case Knight:
+					ret << "N";
+					break;
+
+					case Bishop:
+					ret << "B";
+					break;
+
+					case Queen:
+					ret << "Q";
+					break;
+
+					case King:
+					ret << "K";
+					break;
+
+					default:
+					break;
+				}
+            }
+            else if (pieces[Black].pieces[i][7-j]!=Empty) {
+				if (nEmpty>0) {
+					ret << nEmpty;
+					nEmpty = 0;
+				}
+				switch (pieces[Black].pieces[i][7-j]) {
+					case Pawn:
+					ret << "p";
+					break;
+
+					case Rook:
+					ret << "r";
+					break;
+
+					case Knight:
+					ret << "n";
+					break;
+
+					case Bishop:
+					ret << "b";
+					break;
+
+					case Queen:
+					ret << "q";
+					break;
+
+					case King:
+					ret << "k";
+					break;
+
+					default:
+					break;
+				}
+            }
+            else
+				nEmpty++;
+        }
+        if (nEmpty>0) {
+			ret << nEmpty;
+			nEmpty = 0;
+        }
+        if (j!=7)
+			ret << '/';
+    }
+	ret << " " << ((whiteMove)?("w"):("b")) << " ";
+	if (!kingMoved[White]) {
+		if (!rookMoved[White][1]) {
+			ret << "K";
+			c = true;
+		}
+		if (!rookMoved[White][0]) {
+			ret << "Q";
+			c = true;
+		}
+	}
+	if (!kingMoved[Black]) {
+		if (!rookMoved[Black][1]) {
+			ret << "k";
+			c = true;
+		}
+		if (!rookMoved[Black][0]) {
+			ret << "q";
+			c = true;
+		}
+	}
+	if (!c)
+		ret << "-";
+	if (enPassant[whiteMove?(Black):(White)]!=Coord(-1,-1))
+		ret << " " << char(enPassant[whiteMove?(Black):(White)].x+'a') << (7-enPassant[whiteMove?(Black):(White)].y+1) << " ";
+	else
+		ret << " - ";
+	ret << "0 " << moveC;
+
+    return ret.str();
 }
