@@ -19,7 +19,8 @@ int main()
     vector<Game> games = pgn.getGames();
     cout << "Loaded " << games.size() << " games\n\n";
 
-    int runningLossTotal = 0;
+    long long int runningLossTotal = 0;
+    int lastScore = 0;
     int nMoves = 0;
 
     for (unsigned int i = 0; i<games.size(); ++i) {
@@ -40,11 +41,19 @@ int main()
 				break;
             }
             fish.setPosition(game.getFEN());
-            //sleep(milliseconds(1000));
+            int score = fish.run();
+            if (score!=999999999) {
+				if (games[i].isWhite==whiteMove) {
+					runningLossTotal += lastScore-score;
+					nMoves++;
+				}
+			}
             whiteMove = !whiteMove;
         }
         cout << "finished game\n";
     }
+    cout << "Average centipawn loss: " << double(runningLossTotal)/double(nMoves) << endl;
+    cout << "Over " << nMoves << " moves\n";
 
 	return 0;
 }
