@@ -3,11 +3,13 @@
 #include "Stockfish.hpp"
 using namespace std;
 
-void Stockfish::WriteToPipe(string msg) {
+extern int stringToInt(string s);
+
+void Stockfish::writeToPipe(string msg) {
     WriteFile(g_hChildStd_IN_Wr, msg.c_str(), msg.size(), NULL, NULL);
 }
 
-vector<string> Stockfish::ReadFromPipe() {
+vector<string> Stockfish::readFromPipe() {
     DWORD dwRead, dwAvailableBytes, dwBytesLeft;
     CHAR chBuf[BUFFER_SIZE];
     BOOL bSuccess = FALSE;
@@ -16,12 +18,9 @@ vector<string> Stockfish::ReadFromPipe() {
     string temp;
 
 	bSuccess = PeekNamedPipe(g_hChildStd_OUT_Rd, chBuf, BUFFER_SIZE, &dwRead, &dwAvailableBytes, &dwBytesLeft);
-	if (bSuccess && dwAvailableBytes>0) {
-		cout << "Success! " << dwAvailableBytes << " bytes available. " << dwBytesLeft << " bytes left\n";
+	if (bSuccess && dwAvailableBytes>0)
 		ReadFile(g_hChildStd_OUT_Rd, chBuf, dwAvailableBytes, &dwRead, NULL);
-	}
-   // if (!bSuccess || dwRead==0)
-	//	break;
+
 	for (unsigned int i = 0; i<dwRead; ++i) {
 		if (chBuf[i]=='\n') {
 			ret.push_back(temp);
@@ -91,13 +90,13 @@ Stockfish::Stockfish() {
      * ACTUAL APPLICATION
     */
 
-    ReadFromPipe();
-    WriteToPipe("uci\n");
+    readFromPipe();
+    writeToPipe("uci\n");
+    writeToPipe("setoption name Minimum Thinking Time 5000\n");
     vector<string> ms;
     while (true) {
-		ms = ReadFromPipe();
+		ms = readFromPipe();
 		for (unsigned int i = 0; i<ms.size(); ++i) {
-			cout << '"' << ms[i] << '"' << endl;
 			if (ms[i]=="uciok")
 				goto done;
 		}
@@ -105,3 +104,57 @@ Stockfish::Stockfish() {
     done:;
 }
 
+void Stockfish::setPosition(string fen) {
+	writeToPipe("position fen "+fen+"\n");
+	writeToPipe("go\n"); //start processing so that the data is more likely to be available by the time the user requests it
+}
+
+int Stockfish::run() {
+	vector<string> messages;
+	string temp;
+	int score = 0;
+
+	enum {
+		ReadingLines,
+		WaitingScore,
+		ReadingScore
+	}state = ReadingLines;
+
+	while (true) {
+		messages = readFromPipe();
+		for (unsigned int i = 0; i<messages.size(); ++i) {
+			temp.clear();
+			for (unsigned int j = 0; j<messages[i].size(); ++j) {
+				if (messages[i][j]==' ') {
+					switch (state) {
+						case ReadingLines:
+							if (temp=="info")
+								state = WaitingScore;
+							else if (temp=="bestmove")
+								goto done;
+							break;
+
+						case WaitingScore:
+							if (temp=="cp")
+								state = ReadingScore;
+							break;
+
+						case ReadingScore:
+							score = stringToInt(temp);
+							state = ReadingLines;
+							goto nextLine;
+
+						default:
+							break;
+					}
+					temp.clear();
+				}
+				else
+					temp.push_back(messages[i][j]);
+			}
+			nextLine:;
+		}
+	}
+	done:
+	return score;
+}

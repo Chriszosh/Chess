@@ -11,15 +11,14 @@
 class Stockfish {
 	static const DWORD BUFFER_SIZE = 8192;
     char buffer[ BUFFER_SIZE ] ;
-
     SECURITY_ATTRIBUTES saAttr;
     HANDLE g_hChildStd_OUT_Rd;
 	HANDLE g_hChildStd_OUT_Wr;
 	HANDLE g_hChildStd_IN_Rd;
 	HANDLE g_hChildStd_IN_Wr;
 
-	void WriteToPipe(std::string msg);
-	std::vector<std::string> ReadFromPipe();
+	void writeToPipe(std::string msg);
+	std::vector<std::string> readFromPipe();
 
 public:
 	/**

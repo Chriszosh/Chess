@@ -7,14 +7,6 @@
 using namespace std;
 
 namespace {
-	int stringToInt(string s) {
-		stringstream ss;
-		int i;
-		ss << s;
-		ss >> i;
-		return i;
-	}
-
 	void getline(ifstream& s, string& d, char d1, char d2) {
 		d.clear();
 		char c;
@@ -25,6 +17,14 @@ namespace {
 		} while (c!=d1 && c!=d2);
 	}
 }
+
+int stringToInt(string s) {
+		stringstream ss;
+		int i;
+		ss << s;
+		ss >> i;
+		return i;
+	}
 
 PGN::PGN(string f) {
 	file = f;

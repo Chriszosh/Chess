@@ -13,10 +13,9 @@ void guiGame();
 
 int main()
 {
-	//Stockfish fish;
-	//return 0;
+	Stockfish fish;
 
-	guiGame();
+	//guiGame();
 
     PGN pgn("data/games.pgn");
     pgn.addAllowedYear(2016);
@@ -41,6 +40,10 @@ int main()
 				cout << endl;
 				break;
             }
+            fish.setPosition(game.getFEN());
+            cout << "Processed FEN: " << game.getFEN() << endl;
+            cout << "Score is: " << fish.run() << endl;
+            sleep(milliseconds(1000));
             whiteMove = !whiteMove;
         }
     }
