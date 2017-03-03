@@ -32,32 +32,11 @@ PGN::PGN(string f) {
     struct tm * now = localtime( & t );
     curYear = now->tm_year+1900;
     curMonth = now->tm_mon+1;
-    allowedYears.push_back(curYear);
-    minMonth = 1;
     playerName = "reidben24";
-}
-
-bool PGN::shouldKeep(int y, int m) {
-    if (find(allowedYears.begin(),allowedYears.end(),y)!=allowedYears.end()) {
-		if (y==allowedYears[0])
-			return m>=minMonth;
-		return true;
-    }
-    return false;
 }
 
 void PGN::setPlayer(string nm) {
 	playerName = nm;
-}
-
-void PGN::addAllowedYear(int y) {
-	if (find(allowedYears.begin(),allowedYears.end(),y)==allowedYears.end())
-		allowedYears.push_back(y);
-	sort(allowedYears.begin(),allowedYears.end());
-}
-
-void PGN::setMinimumMonth(int m) {
-	minMonth = m;
 }
 
 void PGN::parse() {
@@ -81,8 +60,6 @@ void PGN::parse() {
 					temp.age = curMonth-m;
 				else
 					temp.age = curMonth+(curYear-y-1)*12+(12-m);
-				cout << "Loaded game that is " << temp.age << " months old\n";
-				keep = shouldKeep(y,m) && keep;
             }
             else if (data=="White") {
 				getline(input,data,'"');

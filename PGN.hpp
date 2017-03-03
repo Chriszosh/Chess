@@ -25,21 +25,8 @@ struct Game {
 class PGN {
 	std::string file;
 	std::string playerName;
-
 	int curYear, curMonth;
-    std::vector<int> allowedYears;
-    int minMonth;
-
     std::vector<Game> games;
-
-    /**
-     * Helper function to determine if a game should be kept based on age
-     *
-     * \param y The year of the game
-     * \param m The month of the game
-     * \return True if the game should be kept, false otherwise
-     */
-    bool shouldKeep(int y, int m);
 
 public:
 	/**
@@ -55,20 +42,6 @@ public:
 	 * \param name The name of the player
 	 */
 	void setPlayer(std::string nm);
-
-	/**
-	 * Adds a year to get games from
-	 *
-	 * \param y The year to get games from
-	 */
-	void addAllowedYear(int y);
-
-	/**
-	 * Sets the earliest month to get games from in the lowest allowed year
-	 *
-	 * \param m The month to start getting games at (Jan = 1)
-	 */
-	void setMinimumMonth(int m);
 
 	/**
 	 * Actually loads the file and filters the games

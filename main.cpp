@@ -18,8 +18,6 @@ int main()
 	//guiGame();
 
     PGN pgn("data/games.pgn");
-    pgn.addAllowedYear(2016);
-    pgn.setMinimumMonth(2);
     pgn.setPlayer("reidben24");
     pgn.parse();
     vector<Game> games = pgn.getGames();
