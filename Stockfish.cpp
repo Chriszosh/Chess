@@ -60,8 +60,6 @@ Stockfish::Stockfish() {
     */
 
     TCHAR szCmdline[]=TEXT("Stockfish/Windows/stockfish_8_x64.exe");
-    STARTUPINFO siStartInfo;
-    PROCESS_INFORMATION piProcInfo;
 
     // Set up members of the PROCESS_INFORMATION structure.
     ZeroMemory( &piProcInfo, sizeof(PROCESS_INFORMATION) );
@@ -102,6 +100,14 @@ Stockfish::Stockfish() {
 		}
     }
     done:;
+}
+
+Stockfish::~Stockfish() {
+	DWORD dwDesiredAccess = PROCESS_TERMINATE;
+    BOOL  bInheritHandle  = FALSE;
+    HANDLE hProcess = OpenProcess(dwDesiredAccess, bInheritHandle, piProcInfo.dwProcessId);
+	TerminateProcess(hProcess, 0);
+    CloseHandle(hProcess);
 }
 
 void Stockfish::setPosition(string fen) {

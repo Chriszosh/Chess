@@ -10,7 +10,9 @@
  */
 class Stockfish {
 	static const DWORD BUFFER_SIZE = 8192;
-    char buffer[ BUFFER_SIZE ] ;
+    char buffer[BUFFER_SIZE];
+    STARTUPINFO siStartInfo;
+    PROCESS_INFORMATION piProcInfo;
     SECURITY_ATTRIBUTES saAttr;
     HANDLE g_hChildStd_OUT_Rd;
 	HANDLE g_hChildStd_OUT_Wr;
@@ -25,6 +27,11 @@ public:
 	 * Launches Stockfish and creates the pipes to communicate with it
 	 */
 	Stockfish();
+
+	/**
+	 * Terminates the Stockfish instance
+	 */
+	~Stockfish();
 
 	/**
 	 * Sets the position in the engine via a fen string

@@ -13,19 +13,20 @@ void guiGame();
 
 int main()
 {
-	Stockfish fish;
-
-	//guiGame();
-
-    PGN pgn("data/games.pgn");
+	PGN pgn("data/games.pgn");
     pgn.setPlayer("reidben24");
     pgn.parse();
     vector<Game> games = pgn.getGames();
     cout << "Loaded " << games.size() << " games\n\n";
 
+    int runningLossTotal = 0;
+    int nMoves = 0;
+
     for (unsigned int i = 0; i<games.size(); ++i) {
         Chess game;
+        Stockfish fish;
         bool whiteMove = true;
+        nMoves = runningLossTotal = 0;
         for (unsigned int j = 0; j<games[i].moves.size(); ++j) {
             if (!game.makeMove((whiteMove)?(White):(Black),games[i].moves[j])) {
 				cout << "Failed to make move " << (j/2+1) << ". " << ((!whiteMove)?("..."):("")) << games[i].moves[j] << endl;
@@ -39,11 +40,10 @@ int main()
 				break;
             }
             fish.setPosition(game.getFEN());
-            cout << "Processed FEN: " << game.getFEN() << endl;
-            cout << "Score is: " << fish.run() << endl;
-            sleep(milliseconds(1000));
+            //sleep(milliseconds(1000));
             whiteMove = !whiteMove;
         }
+        cout << "finished game\n";
     }
 
 	return 0;
