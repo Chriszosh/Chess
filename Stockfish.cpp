@@ -63,7 +63,7 @@ Stockfish::Stockfish() {
     readFromPipe();
     writeToPipe("uci\n");
     writeToPipe("isready\n");
-    //writeToPipe("setoption name Minimum Thinking Time value 5000\n");
+    writeToPipe("setoption name Minimum Thinking Time value 3000\n");
     writeToPipe("setoption name Threads value 8\n");
     vector<string> ms;
     bool uciok = false, ready = false;

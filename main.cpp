@@ -23,11 +23,10 @@ int main()
     int lastScore = 0;
     int nMoves = 0;
 
-    for (unsigned int i = 0; i<games.size(); ++i) {
+    for (unsigned int i = 0; i<1; ++i) {
         Chess game;
         Stockfish fish;
         bool whiteMove = true;
-        nMoves = runningLossTotal = 0;
         for (unsigned int j = 0; j<games[i].moves.size(); ++j) {
             if (!game.makeMove((whiteMove)?(White):(Black),games[i].moves[j])) {
 				cout << "Failed to make move " << (j/2+1) << ". " << ((!whiteMove)?("..."):("")) << games[i].moves[j] << endl;
@@ -44,8 +43,13 @@ int main()
             int score = fish.run();
             if (score!=999999999) {
 				if (games[i].isWhite==whiteMove) {
-					runningLossTotal += lastScore-score;
+					cout << "My turn, score is: " << score << endl;
+					lastScore = score;
 					nMoves++;
+				}
+				else if (nMoves>0) {
+					runningLossTotal += lastScore+score;
+					cout << "Score after my move: " << (-score) << endl;
 				}
 			}
             whiteMove = !whiteMove;
